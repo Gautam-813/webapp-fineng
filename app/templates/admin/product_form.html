@@ -1,0 +1,464 @@
+{% extends 'admin/base.html' %}
+{% block title %}{% if product_id %}Edit Product{% else %}New Product{% endif %} - Admin{% endblock %}
+{% block content %}
+
+<div class="admin-page-header mb-4">
+    <div>
+        <span class="category-pill small mb-2 px-3 py-2">{% if product_id %}Edit Catalog Item{% else %}Create Catalog Item{% endif %}</span>
+        <h4 class="fw-bold mb-1">{% if product_id %}Edit Product{% else %}New Product{% endif %}</h4>
+        <p class="text-muted mb-0">Manage product copy, pricing, publishing status, thumbnails, and proof screenshots.</p>
+    </div>
+    <div class="d-flex gap-2">
+        {% if product_id %}
+            <a href="#" class="btn btn-outline-primary btn-sm" id="viewPublicProduct" target="_blank">
+                <i class="bi bi-eye me-1"></i>View
+            </a>
+        {% endif %}
+        <a href="/admin/products" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 align-items-start">
+    <div class="col-xl-8">
+        <form id="productForm">
+            <div class="admin-panel mb-4">
+                <div class="admin-section-heading">
+                    <div class="icon-tile"><i class="bi bi-box-seam"></i></div>
+                    <div>
+                        <h5 class="fw-bold mb-1">Basic Information</h5>
+                        <p class="text-muted small mb-0">Name, URL slug, platform, and catalog placement.</p>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-7">
+                        <label class="form-label small fw-semibold">Product Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-lg" id="name" required placeholder="Gold Scalper Pro">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label small fw-semibold">Slug <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-lg" id="slug" required placeholder="gold-scalper-pro">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Category</label>
+                        <select class="form-select" id="category_id">
+                            <option value="">No category</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Platform</label>
+                        <input type="text" class="form-control" id="platform" placeholder="MT4, MT5">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Version</label>
+                        <input type="text" class="form-control" id="version" placeholder="1.0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-panel mb-4">
+                <div class="admin-section-heading">
+                    <div class="icon-tile"><i class="bi bi-cash-coin"></i></div>
+                    <div>
+                        <h5 class="fw-bold mb-1">Pricing & Publishing</h5>
+                        <p class="text-muted small mb-0">Control product price, availability, and featured placement.</p>
+                    </div>
+                </div>
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Price (USD) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control form-control-lg" id="price" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Status</label>
+                        <select class="form-select form-select-lg" id="status">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="draft">Draft</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check admin-featured-check">
+                            <input type="checkbox" class="form-check-input" id="featured">
+                            <label class="form-check-label fw-semibold">Featured Product</label>
+                            <div class="form-text">Use this for highlighted catalog items later.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-panel mb-4">
+                <div class="admin-section-heading">
+                    <div class="icon-tile"><i class="bi bi-card-text"></i></div>
+                    <div>
+                        <h5 class="fw-bold mb-1">Product Copy</h5>
+                        <p class="text-muted small mb-0">Keep the short description scannable and the full description practical.</p>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Short Description</label>
+                    <textarea class="form-control" id="short_description" rows="2" maxlength="500" placeholder="Short catalog summary shown on product cards."></textarea>
+                </div>
+                <div>
+                    <label class="form-label small fw-semibold">Full Description</label>
+                    <textarea class="form-control" id="description" rows="7" placeholder="Describe strategy type, setup notes, platform support, risk controls, and what the customer receives."></textarea>
+                </div>
+            </div>
+
+            <div class="admin-form-actions">
+                <button type="submit" class="btn btn-primary px-4 fw-semibold" id="saveBtn">
+                    <i class="bi bi-check-lg me-1"></i>Save Product
+                </button>
+                <a href="/admin/products" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+            <div id="formError" class="alert alert-danger mt-3 d-none"></div>
+            <div id="formSuccess" class="alert alert-success mt-3 d-none"></div>
+        </form>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="admin-panel mb-4">
+            <div class="admin-section-heading compact">
+                <div class="icon-tile"><i class="bi bi-image"></i></div>
+                <div>
+                    <h5 class="fw-bold mb-1">Thumbnail</h5>
+                    <p class="text-muted small mb-0">Main image used in catalog and cart.</p>
+                </div>
+            </div>
+            <div class="admin-thumbnail-preview mb-3" id="thumbnailPreview">
+                <i class="bi bi-image"></i>
+            </div>
+            <label class="form-label small fw-semibold">Thumbnail URL</label>
+            <input type="url" class="form-control mb-3" id="thumbnail_url" placeholder="/static/uploads/products/...">
+            <label class="form-label small fw-semibold">Upload Thumbnail</label>
+            <input type="file" class="form-control" id="thumbnail_file" accept="image/*">
+            <div class="form-text">Save the product first, then upload a main image.</div>
+        </div>
+
+        <div class="admin-panel" id="mediaCard">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+                <div>
+                    <h5 class="fw-bold mb-1">Detail Images</h5>
+                    <p class="text-muted small mb-0">Settings, PnL, backtest, setup, chart, and proof screenshots.</p>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="refreshImagesBtn" title="Refresh images">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+
+            <div class="alert alert-info small mb-3" id="mediaHelp">
+                Save the product first to enable image uploads.
+            </div>
+
+            <div id="mediaUploadControls">
+                <label class="form-label small fw-semibold">Gallery Image</label>
+                <input type="file" class="form-control mb-2" id="gallery_file" accept="image/*">
+                <label class="form-label small fw-semibold">Label / Alt Text</label>
+                <input type="text" class="form-control mb-2" id="gallery_alt_text" placeholder="Settings, PnL, Backtest">
+                <div class="row g-2 align-items-end">
+                    <div class="col-5">
+                        <label class="form-label small fw-semibold">Sort</label>
+                        <input type="number" class="form-control" id="gallery_sort_order" value="0">
+                    </div>
+                    <div class="col-7 d-grid">
+                        <button type="button" class="btn btn-primary" id="uploadGalleryBtn">
+                            <i class="bi bi-upload me-1"></i>Upload
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-3" id="galleryList"></div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+var productId = {{ product_id or 'null' }};
+var currentImages = [];
+var currentSlug = '';
+
+function escapeAdminHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function(ch) {
+        return {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[ch];
+    });
+}
+
+function showAlert(message, type) {
+    var error = document.getElementById('formError');
+    var success = document.getElementById('formSuccess');
+    error.classList.add('d-none');
+    success.classList.add('d-none');
+    var target = type === 'danger' || type === 'warning' ? error : success;
+    target.innerHTML = message;
+    target.classList.remove('d-none');
+}
+
+function updateThumbnailPreview(url) {
+    var preview = document.getElementById('thumbnailPreview');
+    if (url) {
+        preview.innerHTML = '<img src="' + escapeAdminHtml(url) + '" alt="Thumbnail preview">';
+    } else {
+        preview.innerHTML = '<i class="bi bi-image"></i>';
+    }
+}
+
+function updatePublicLink() {
+    var link = document.getElementById('viewPublicProduct');
+    if (link && currentSlug) link.href = '/products/' + encodeURIComponent(currentSlug);
+}
+
+function loadCategories() {
+    return fetch('/api/admin/categories').then(function(r) { return r.json(); }).then(function(cats) {
+        var sel = document.getElementById('category_id');
+        cats.forEach(function(c) {
+            var opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.name + ' (' + c.product_count + ' products)';
+            sel.appendChild(opt);
+        });
+    });
+}
+
+function loadProduct(id) {
+    return fetch('/api/admin/products/' + id).then(function(r) { return r.json(); }).then(function(p) {
+        document.getElementById('name').value = p.name || '';
+        document.getElementById('slug').value = p.slug || '';
+        document.getElementById('price').value = p.price || '';
+        document.getElementById('category_id').value = p.category?.id || '';
+        document.getElementById('status').value = p.status || 'active';
+        document.getElementById('platform').value = p.platform || '';
+        document.getElementById('version').value = p.version || '';
+        document.getElementById('thumbnail_url').value = p.thumbnail_url || '';
+        document.getElementById('featured').checked = p.featured || false;
+        document.getElementById('short_description').value = p.short_description || '';
+        document.getElementById('description').value = p.description || '';
+        currentSlug = p.slug || '';
+        currentImages = p.images || [];
+        updateThumbnailPreview(p.thumbnail_url || '');
+        updatePublicLink();
+        renderGalleryList();
+    });
+}
+
+function setMediaEnabled() {
+    var enabled = !!productId;
+    document.getElementById('mediaHelp').classList.toggle('d-none', enabled);
+    document.getElementById('mediaUploadControls').style.display = enabled ? 'block' : 'none';
+    document.getElementById('refreshImagesBtn').disabled = !enabled;
+    document.getElementById('thumbnail_file').disabled = !enabled;
+}
+
+function renderGalleryList() {
+    var list = document.getElementById('galleryList');
+    if (!productId) {
+        list.innerHTML = '';
+        return;
+    }
+    if (!currentImages.length) {
+        list.innerHTML = '<div class="col-12"><div class="empty-state text-center text-muted small p-4">No detail images uploaded yet.</div></div>';
+        return;
+    }
+
+    list.innerHTML = currentImages.map(function(img) {
+        return '<div class="col-12">' +
+            '<div class="admin-gallery-card">' +
+            '<div class="product-admin-image-preview bg-light">' +
+            '<img src="' + escapeAdminHtml(img.image_url) + '" alt="' + escapeAdminHtml(img.alt_text || 'Product image') + '">' +
+            '</div>' +
+            '<div class="p-3">' +
+            '<label class="form-label small fw-semibold">Label</label>' +
+            '<input type="text" class="form-control form-control-sm mb-2" id="image_alt_' + img.id + '" value="' + escapeAdminHtml(img.alt_text || '') + '">' +
+            '<label class="form-label small fw-semibold">Sort</label>' +
+            '<input type="number" class="form-control form-control-sm mb-3" id="image_sort_' + img.id + '" value="' + (img.sort_order || 0) + '">' +
+            '<div class="d-flex gap-2">' +
+            '<button type="button" class="btn btn-sm btn-outline-primary flex-fill" onclick="updateGalleryImage(' + img.id + ')">Save</button>' +
+            '<button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteGalleryImage(' + img.id + ')" title="Delete"><i class="bi bi-trash"></i></button>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+    }).join('');
+}
+
+function refreshProductImages() {
+    if (!productId) return Promise.resolve();
+    return loadProduct(productId);
+}
+
+function uploadThumbnail() {
+    if (!productId) return;
+    var input = document.getElementById('thumbnail_file');
+    if (!input.files.length) return;
+    var formData = new FormData();
+    formData.append('file', input.files[0]);
+    fetch('/api/admin/products/' + productId + '/thumbnail', {
+        method: 'POST',
+        body: formData
+    })
+        .then(function(r) {
+            if (!r.ok) return r.json().then(function(err) { throw new Error(err.detail || 'Upload failed'); });
+            return r.json();
+        })
+        .then(function(data) {
+            document.getElementById('thumbnail_url').value = data.thumbnail_url || '';
+            updateThumbnailPreview(data.thumbnail_url || '');
+            input.value = '';
+            showAlert('Thumbnail uploaded successfully.', 'success');
+        })
+        .catch(function(err) { showAlert('Error: ' + err.message, 'danger'); });
+}
+
+function uploadGalleryImage() {
+    if (!productId) return;
+    var input = document.getElementById('gallery_file');
+    if (!input.files.length) {
+        showAlert('Choose an image first.', 'warning');
+        return;
+    }
+    var formData = new FormData();
+    formData.append('file', input.files[0]);
+    formData.append('alt_text', document.getElementById('gallery_alt_text').value.trim());
+    formData.append('sort_order', document.getElementById('gallery_sort_order').value || '0');
+    fetch('/api/admin/products/' + productId + '/images', {
+        method: 'POST',
+        body: formData
+    })
+        .then(function(r) {
+            if (!r.ok) return r.json().then(function(err) { throw new Error(err.detail || 'Upload failed'); });
+            return r.json();
+        })
+        .then(function() {
+            input.value = '';
+            document.getElementById('gallery_alt_text').value = '';
+            document.getElementById('gallery_sort_order').value = '0';
+            showAlert('Gallery image uploaded successfully.', 'success');
+            return refreshProductImages();
+        })
+        .catch(function(err) { showAlert('Error: ' + err.message, 'danger'); });
+}
+
+function updateGalleryImage(imageId) {
+    fetch('/api/admin/products/' + productId + '/images/' + imageId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            alt_text: document.getElementById('image_alt_' + imageId).value.trim(),
+            sort_order: parseInt(document.getElementById('image_sort_' + imageId).value) || 0
+        })
+    })
+        .then(function(r) {
+            if (!r.ok) return r.json().then(function(err) { throw new Error(err.detail || 'Update failed'); });
+            return r.json();
+        })
+        .then(function() {
+            showAlert('Image details saved.', 'success');
+            return refreshProductImages();
+        })
+        .catch(function(err) { showAlert('Error: ' + err.message, 'danger'); });
+}
+
+function deleteGalleryImage(imageId) {
+    if (!confirm('Delete this product image?')) return;
+    fetch('/api/admin/products/' + productId + '/images/' + imageId, { method: 'DELETE' })
+        .then(function(r) {
+            if (!r.ok && r.status !== 204) return r.json().then(function(err) { throw new Error(err.detail || 'Delete failed'); });
+        })
+        .then(function() {
+            showAlert('Image deleted.', 'success');
+            return refreshProductImages();
+        })
+        .catch(function(err) { showAlert('Error: ' + err.message, 'danger'); });
+}
+
+function autoSlug() {
+    var nameInput = document.getElementById('name');
+    var slugInput = document.getElementById('slug');
+    nameInput.addEventListener('input', function() {
+        if (!slugInput.dataset.manual) {
+            slugInput.value = nameInput.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        }
+    });
+    slugInput.addEventListener('input', function() { slugInput.dataset.manual = 'true'; });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    autoSlug();
+    setMediaEnabled();
+    document.getElementById('thumbnail_file').addEventListener('change', uploadThumbnail);
+    document.getElementById('thumbnail_url').addEventListener('input', function() { updateThumbnailPreview(this.value.trim()); });
+    document.getElementById('uploadGalleryBtn').addEventListener('click', uploadGalleryImage);
+    document.getElementById('refreshImagesBtn').addEventListener('click', refreshProductImages);
+    loadCategories().then(function() {
+        if (productId) return loadProduct(productId);
+    }).then(function() {
+        setMediaEnabled();
+    });
+
+    document.getElementById('productForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var btn = document.getElementById('saveBtn');
+        var error = document.getElementById('formError');
+        var success = document.getElementById('formSuccess');
+        error.classList.add('d-none');
+        success.classList.add('d-none');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+        var data = {
+            name: document.getElementById('name').value.trim(),
+            slug: document.getElementById('slug').value.trim(),
+            price: parseFloat(document.getElementById('price').value) || 0,
+            category_id: parseInt(document.getElementById('category_id').value) || null,
+            status: document.getElementById('status').value,
+            platform: document.getElementById('platform').value.trim(),
+            version: document.getElementById('version').value.trim(),
+            thumbnail_url: document.getElementById('thumbnail_url').value.trim(),
+            featured: document.getElementById('featured').checked,
+            short_description: document.getElementById('short_description').value.trim(),
+            description: document.getElementById('description').value.trim(),
+        };
+
+        var wasNew = !productId;
+        var url = productId ? '/api/admin/products/' + productId : '/api/admin/products';
+        var method = productId ? 'PUT' : 'POST';
+
+        fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+            .then(function(r) {
+                if (!r.ok) return r.json().then(function(err) { throw new Error(err.detail || 'Failed to save'); });
+                return r.json();
+            })
+            .then(function(savedProduct) {
+                if (wasNew && savedProduct.id) {
+                    productId = savedProduct.id;
+                    window.history.replaceState({}, '', '/admin/products/' + productId + '/edit');
+                    setMediaEnabled();
+                }
+                currentSlug = savedProduct.slug || data.slug;
+                updatePublicLink();
+                updateThumbnailPreview(data.thumbnail_url);
+                success.textContent = wasNew ? 'Product saved. You can now upload images.' : 'Product saved successfully.';
+                success.classList.remove('d-none');
+                return refreshProductImages();
+            })
+            .catch(function(err) {
+                error.textContent = err.message;
+                error.classList.remove('d-none');
+            })
+            .finally(function() {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Save Product';
+            });
+    });
+});
+</script>
+{% endblock %}

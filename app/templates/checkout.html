@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Checkout - TheFinanceCompany{% endblock %}
+{% block content %}
+
+<section class="cart-hero py-4">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item"><a href="/cart" class="text-decoration-none">Cart</a></li>
+                <li class="breadcrumb-item active">Checkout</li>
+            </ol>
+        </nav>
+        <span class="category-pill small mb-2 px-3 py-2">Demo Checkout</span>
+        <h1 class="fw-bold mb-2">Create Your Order</h1>
+        <p class="text-muted mb-0">Enter customer details and create a confirmed demo order. No payment is collected in this step.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-7">
+                <div class="cart-panel">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="icon-tile"><i class="bi bi-person-lines-fill"></i></div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Customer Information</h5>
+                            <p class="text-muted small mb-0">We use this to identify the order in admin.</p>
+                        </div>
+                    </div>
+                    <form id="checkoutForm" novalidate>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="customerName" class="form-label small fw-semibold">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg" id="customerName" required placeholder="John Smith">
+                                <div class="invalid-feedback">Please enter your name.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="customerEmail" class="form-label small fw-semibold">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control form-control-lg" id="customerEmail" required placeholder="john@example.com">
+                                <div class="invalid-feedback">Please enter a valid email.</div>
+                            </div>
+                        </div>
+
+                        <div id="checkoutSummary" class="checkout-inline-summary d-none mt-4">
+                            <h6 class="fw-bold mb-3">Review Total</h6>
+                            <div id="checkoutItems" class="mb-3"></div>
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">Total</span>
+                                <span id="checkoutTotal" class="fw-bold fs-4 text-primary">$0.00</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-lg w-100 mt-4 py-3 fw-semibold" id="placeOrderBtn" disabled>
+                            <i class="bi bi-check-circle me-2"></i>Place Order - <span id="orderTotalText">$0.00</span>
+                        </button>
+
+                        <p class="text-muted small text-center mt-3 mb-0">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Demo checkout creates a confirmed order now. Payment integration will be added later.
+                        </p>
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="cart-summary-panel">
+                    <h5 class="fw-bold mb-3">Items in Your Cart</h5>
+                    <div id="checkoutCartItems">
+                        <p class="text-muted small">Loading...</p>
+                    </div>
+                </div>
+                {% include 'partials/disclaimer.html' %}
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/checkout.js"></script>
+{% endblock %}

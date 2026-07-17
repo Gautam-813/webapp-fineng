@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Order Confirmed - TheFinanceCompany{% endblock %}
+{% block content %}
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <div class="confirmation-panel text-center">
+                    <div class="confirmation-icon mb-4">
+                        <i class="bi bi-check-lg"></i>
+                    </div>
+                    <span class="category-pill small mb-3 px-3 py-2">Order Created</span>
+                    <h1 class="fw-bold mb-2">Order Confirmed</h1>
+                    {% if order_id %}
+                        <p class="text-muted mb-4">Demo order <strong>#{{ order_id }}</strong> has been created successfully.</p>
+                    {% else %}
+                        <p class="text-muted mb-4">Your demo order has been created successfully.</p>
+                    {% endif %}
+
+                    <div class="confirmation-next text-start mb-4">
+                        <h6 class="fw-bold mb-3">What happens next?</h6>
+                        <div class="benefit-row mb-3">
+                            <i class="bi bi-clipboard-check"></i>
+                            <div>
+                                <strong>Admin review</strong>
+                                <p class="text-muted small mb-0">The order is now visible in the admin orders screen with confirmed status.</p>
+                            </div>
+                        </div>
+                        <div class="benefit-row">
+                            <i class="bi bi-credit-card"></i>
+                            <div>
+                                <strong>Payment later</strong>
+                                <p class="text-muted small mb-0">Automated payment, licenses, and delivery can be connected when the demo flow is approved.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-sm-flex justify-content-center">
+                        <a href="/products" class="btn btn-primary btn-lg px-4 fw-semibold">
+                            <i class="bi bi-box me-2"></i>Browse Products
+                        </a>
+                        <a href="/contact" class="btn btn-outline-primary btn-lg px-4">
+                            <i class="bi bi-chat-dots me-2"></i>Contact Team
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

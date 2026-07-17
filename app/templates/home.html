@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+{% block title %}TheFinanceCompany — Financial Software Solutions{% endblock %}
+{% block content %}
+
+<section class="hero-section dark-section">
+    <div class="container py-5">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-6 py-5">
+                <span class="soft-badge mb-3 px-3 py-2">
+                    <i class="bi bi-shield-check"></i>Built for serious traders
+                </span>
+                <h1 class="display-4 fw-bold mb-3">Professional Trading<br>Software, Built for Results</h1>
+                <p class="lead mb-4 hero-subtitle">Pre-built trading software, Expert Advisors, copiers, custom development, and technical consulting for the modern trader. Deploy proven strategies in minutes.</p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="/products" class="btn btn-lg btn-success px-4 py-3 fw-semibold">
+                        <i class="bi bi-box me-2"></i>View Products
+                    </a>
+                    <a href="/contact" class="btn btn-lg btn-outline-light px-4 py-3 fw-semibold">
+                        <i class="bi bi-code-slash me-2"></i>Custom Development
+                    </a>
+                </div>
+                <div class="d-flex flex-wrap gap-4 mt-4 hero-meta small">
+                    <span><i class="bi bi-shield-check me-1"></i>Secure Checkout</span>
+                    <span><i class="bi bi-headset me-1"></i>Priority Support</span>
+                    <span><i class="bi bi-arrow-repeat me-1"></i>Regular Updates</span>
+                </div>
+            </div>
+            <div class="col-lg-6 py-5 d-none d-lg-block">
+                <div class="hero-visual position-relative p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <p class="text-light-readable small mb-1">EA Performance Monitor</p>
+                            <h5 class="text-white fw-bold mb-0">Live Strategy Stack</h5>
+                        </div>
+                        <span class="badge text-bg-success">Active</span>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="metric-card p-3 shadow-sm">
+                                <small class="text-muted">Solutions</small>
+                                <div class="fs-4 fw-bold">{{ active_product_count }}+</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="metric-card p-3 shadow-sm">
+                                <small class="text-muted">Platforms</small>
+                                <div class="fs-4 fw-bold">MT4 / MT5</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center py-4">
+                        <i class="bi bi-graph-up-arrow chart-line" style="font-size: 10rem;"></i>
+                    </div>
+                    <div class="d-flex justify-content-between small text-light-readable">
+                        <span><i class="bi bi-lock me-1"></i>Secure delivery</span>
+                        <span><i class="bi bi-cpu me-1"></i>Versioned software</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 overflow-hidden">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-5">
+                <span class="category-pill small mb-3 px-3 py-2">Algorithmic Trading</span>
+                <h2 class="fw-bold mb-3">What is algorithmic trading?</h2>
+                <p class="text-muted mb-4">Algorithmic trading uses software to follow predefined trading rules. Instead of manually watching charts all day, traders can use Expert Advisors, trade copiers, indicators, and automation tools to execute or support a strategy with consistency.</p>
+                <a href="/products" class="btn btn-outline-primary px-4 fw-semibold">
+                    Explore Trading Software <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+            </div>
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4 p-lg-5">
+                        <div class="benefit-list">
+                            <div class="benefit-row">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Rules over emotion</h6>
+                                    <p class="text-muted small mb-0">Software follows the strategy logic you define, helping reduce hesitation, overtrading, and impulsive decisions.</p>
+                                </div>
+                            </div>
+                            <div class="benefit-row">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Fast and consistent execution</h6>
+                                    <p class="text-muted small mb-0">Trading tools can react to market conditions faster than manual workflows while applying the same rules every time.</p>
+                                </div>
+                            </div>
+                            <div class="benefit-row">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Better strategy control</h6>
+                                    <p class="text-muted small mb-0">Inputs, risk settings, filters, and platform compatibility can be designed around how the strategy should behave.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="category-pill small mb-3 px-3 py-2">Benefits</span>
+            <h2 class="fw-bold mb-2">How algo trading helps traders</h2>
+            <p class="text-muted mx-auto mb-0" style="max-width: 680px;">Automation does not remove risk, but it can make strategy execution more structured, testable, and repeatable.</p>
+        </div>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+            <div class="col">
+                <div class="card icon-card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="icon-tile mb-3"><i class="bi bi-lightning-charge"></i></div>
+                        <h5 class="fw-bold">Speed</h5>
+                        <p class="text-muted small mb-0">React quickly when strategy conditions are met, without waiting for manual chart checks.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card icon-card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="icon-tile mb-3"><i class="bi bi-sliders"></i></div>
+                        <h5 class="fw-bold">Discipline</h5>
+                        <p class="text-muted small mb-0">Keep entries, exits, filters, and risk rules aligned with the strategy design.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card icon-card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="icon-tile mb-3"><i class="bi bi-bar-chart-line"></i></div>
+                        <h5 class="fw-bold">Backtesting</h5>
+                        <p class="text-muted small mb-0">Review strategy behavior on historical market data before using it live.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card icon-card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="icon-tile mb-3"><i class="bi bi-shield-check"></i></div>
+                        <h5 class="fw-bold">Risk controls</h5>
+                        <p class="text-muted small mb-0">Build in lot sizing, drawdown limits, stop logic, and safety filters from the start.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card icon-card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="icon-tile mb-3"><i class="bi bi-columns-gap"></i></div>
+                        <h5 class="fw-bold">Multi-market monitoring</h5>
+                        <p class="text-muted small mb-0">Track more symbols and setups than most traders can monitor manually.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card icon-card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="icon-tile mb-3"><i class="bi bi-arrow-repeat"></i></div>
+                        <h5 class="fw-bold">Repeatability</h5>
+                        <p class="text-muted small mb-0">Apply the same process across sessions, accounts, and changing market conditions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="category-pill small mb-3 px-3 py-2">Where We Help</span>
+            <h2 class="fw-bold mb-2">Software support for every stage of your trading workflow</h2>
+            <p class="text-muted mx-auto mb-0" style="max-width: 720px;">Use a ready-made EA, request a custom build, or work with us to turn a strategy into maintainable trading software.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="icon-tile mx-auto mb-3"><i class="bi bi-box"></i></div>
+                        <h5 class="fw-bold">Ready-to-use trading tools</h5>
+                        <p class="text-muted small">Browse pre-built EAs, trade copiers, indicators, and utilities designed for MT4/MT5 traders who want practical automation tools.</p>
+                        <a href="/products" class="btn btn-sm btn-outline-primary mt-2">View Products</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="icon-tile mx-auto mb-3"><i class="bi bi-code-slash"></i></div>
+                        <h5 class="fw-bold">Custom trading software</h5>
+                        <p class="text-muted small">Turn your rules, indicators, or trade-management process into software built around your requirements.</p>
+                        <a href="/contact" class="btn btn-sm btn-outline-primary mt-2">Request a Build</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="icon-tile mx-auto mb-3"><i class="bi bi-tools"></i></div>
+                        <h5 class="fw-bold">Indicators and tooling</h5>
+                        <p class="text-muted small">Build dashboards, indicators, trade helpers, and automation utilities that support your trading workflow.</p>
+                        <a href="/contact" class="btn btn-sm btn-outline-primary mt-2">Discuss Tools</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row g-4 align-items-stretch">
+            <div class="col-lg-4">
+                <div class="h-100">
+                    <span class="category-pill small mb-3 px-3 py-2">Process</span>
+                    <h2 class="fw-bold mb-3">How it works</h2>
+                    <p class="text-muted mb-0">A clear path from idea to deployed trading software, whether you choose an existing product or request a custom build.</p>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    <div class="col">
+                        <div class="card process-step border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <span class="step-number mb-3">1</span>
+                                <h5 class="fw-bold">Choose your path</h5>
+                                <p class="text-muted small mb-0">Browse ready-made EAs or tell us about a strategy that needs custom development.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card process-step border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <span class="step-number mb-3">2</span>
+                                <h5 class="fw-bold">Configure the logic</h5>
+                                <p class="text-muted small mb-0">Set platform requirements, risk settings, inputs, filters, and delivery expectations.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card process-step border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <span class="step-number mb-3">3</span>
+                                <h5 class="fw-bold">Deploy with support</h5>
+                                <p class="text-muted small mb-0">Install on MT4/MT5, review settings, and get help with setup and usage questions.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card process-step border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <span class="step-number mb-3">4</span>
+                                <h5 class="fw-bold">Monitor and improve</h5>
+                                <p class="text-muted small mb-0">Track behavior, refine settings, and plan updates when strategy requirements evolve.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-6">
+                <span class="category-pill small mb-3 px-3 py-2">Why TheFinanceCompany</span>
+                <h2 class="fw-bold mb-3">Built by developers who understand trading workflows</h2>
+                <p class="text-muted mb-4">Financial automation is not only about writing code. It needs clear strategy logic, careful risk handling, platform awareness, and maintainable implementation.</p>
+                <div class="benefit-list">
+                    <div class="benefit-row">
+                        <i class="bi bi-cpu"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">MT4/MT5 expertise</h6>
+                            <p class="text-muted small mb-0">Expert Advisors, trade copiers, indicators, and utilities built around familiar trading platforms.</p>
+                        </div>
+                    </div>
+                    <div class="benefit-row">
+                        <i class="bi bi-diagram-3"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Maintainable software</h6>
+                            <p class="text-muted small mb-0">Clear inputs, versioning, delivery flow, and support-minded implementation.</p>
+                        </div>
+                    </div>
+                    <div class="benefit-row">
+                        <i class="bi bi-headset"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Practical support</h6>
+                            <p class="text-muted small mb-0">Help with setup, product questions, and custom development discovery.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="risk-panel p-4 p-lg-5">
+                    <div class="d-flex gap-3 align-items-start">
+                        <i class="bi bi-exclamation-triangle fs-3"></i>
+                        <div>
+                            <h5 class="fw-bold mb-2">Risk-first reminder</h5>
+                            <p class="mb-0">Algorithmic trading tools can support execution and consistency, but they do not guarantee profit. Markets involve risk, and every EA or custom tool should be used with appropriate risk settings, testing, and judgment.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 text-center dark-section">
+    <div class="container py-4">
+        <h2 class="text-white fw-bold mb-3">Ready to explore trading automation?</h2>
+        <p class="text-light-readable mb-4 mx-auto" style="max-width: 640px;">Start with our existing EA catalog or request custom software for your strategy, indicator, or trading workflow.</p>
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            <a href="/products" class="btn btn-lg btn-success px-5 py-3 fw-semibold">
+                <i class="bi bi-box me-2"></i>View Products
+            </a>
+            <a href="/contact" class="btn btn-lg btn-outline-light px-5 py-3 fw-semibold">
+                <i class="bi bi-chat-dots me-2"></i>Request Custom Software
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

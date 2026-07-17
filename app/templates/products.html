@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% block title %}All Products - TheFinanceCompany{% endblock %}
+{% block content %}
+
+<section class="catalog-hero py-5">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item active">Products</li>
+            </ol>
+        </nav>
+
+        <div class="row align-items-end g-4">
+            <div class="col-lg-8">
+                <span class="category-pill small mb-3 px-3 py-2">Trading Software Catalog</span>
+                <h1 class="display-5 fw-bold mb-3">EAs, copiers, indicators, and automation tools for MT4/MT5</h1>
+                <p class="lead text-muted mb-0">Browse Expert Advisors, trade copiers, indicators, utilities, and automation tools with clear pricing, platform support, and practical descriptions.</p>
+            </div>
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Available solutions</span>
+                            <span class="fs-4 fw-bold text-primary">{{ products|length }}</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="platform-badge">MT4</span>
+                            <span class="platform-badge">MT5</span>
+                            <span class="platform-badge">Copiers</span>
+                            <span class="platform-badge">Instant delivery</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 mb-4">
+                <div class="card border-0 shadow-sm catalog-filter-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0"><i class="bi bi-funnel me-2"></i>Filter</h6>
+                            <button class="btn btn-sm btn-link text-decoration-none p-0" id="clearFilters" type="button">Clear</button>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Category</label>
+                            <select class="form-select" id="categoryFilter">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat.slug }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Sort By</label>
+                            <select class="form-select" id="sortFilter">
+                                <option value="newest">Newest</option>
+                                <option value="price_asc">Price: Low to High</option>
+                                <option value="price_desc">Price: High to Low</option>
+                                <option value="name">Name</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Search</label>
+                            <input type="search" class="form-control" id="searchFilter" placeholder="Search products...">
+                        </div>
+                        <button class="btn btn-primary w-100" id="applyFilters" type="button">
+                            <i class="bi bi-search me-2"></i>Apply Filters
+                        </button>
+                        <p class="text-muted small mb-0 mt-3">Prices are validated securely during checkout.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-9">
+                <div class="catalog-toolbar p-3 mb-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                        <div>
+                            <h6 class="fw-bold mb-1">Available products</h6>
+                            <p class="text-muted small mb-0" id="resultSummary">{{ products|length }} products shown</p>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 small text-muted">
+                            <span><i class="bi bi-shield-check me-1 text-success"></i>Secure checkout</span>
+                            <span><i class="bi bi-download me-1 text-primary"></i>Digital delivery</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-4" id="productGrid">
+                    {% for product in products %}
+                        {% include 'partials/product_card.html' %}
+                    {% endfor %}
+                </div>
+                {% if not products %}
+                    <div class="empty-state text-center py-5 px-3">
+                        <i class="bi bi-box text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-3">No products available yet. Check back soon!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+{% block scripts %}
+<script>
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, function(ch) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[ch];
+    });
+}
+
+function formatPrice(value) {
+    var number = Number(value);
+    return Number.isFinite(number) ? number.toFixed(2) : escapeHtml(value);
+}
+
+function renderProductCard(p) {
+    var name = escapeHtml(p.name);
+    var slug = encodeURIComponent(p.slug);
+    var description = p.short_description ? escapeHtml(p.short_description.substring(0, 120)) : '';
+    var platform = p.platform ? escapeHtml(p.platform) : '';
+    var version = p.version ? escapeHtml(p.version) : '';
+    var thumbnail = p.thumbnail_url
+        ? '<img src="' + escapeHtml(p.thumbnail_url) + '" class="card-img-top product-thumbnail" alt="' + name + '">'
+        : '<div class="placeholder-img d-flex align-items-center justify-content-center" style="height: 180px;"><i class="bi bi-box" style="font-size: 3rem;"></i></div>';
+
+    return '<div class="col">' +
+        '<div class="card h-100 border-0 shadow-sm product-card">' +
+        '<div class="card-img-wrapper bg-light text-center p-3">' + thumbnail + '</div>' +
+        '<div class="card-body d-flex flex-column">' +
+        (p.category_name ? '<span class="category-pill small align-self-start mb-2 px-2 py-1">' + escapeHtml(p.category_name) + '</span>' : '') +
+        '<h5 class="card-title fw-bold mb-1"><a href="/products/' + slug + '" class="text-decoration-none">' + name + '</a></h5>' +
+        (description ? '<p class="card-text text-muted small flex-grow-1">' + description + (p.short_description.length > 120 ? '...' : '') + '</p>' : '') +
+        (platform ? '<div class="d-flex flex-wrap gap-2 mt-2"><span class="platform-badge"><i class="bi bi-cpu me-1"></i>' + platform + '</span>' + (version ? '<span class="platform-badge">v' + version + '</span>' : '') + '</div>' : '') +
+        '<div class="mt-3"><span class="fs-5 fw-bold text-primary">$' + formatPrice(p.price) + '</span></div>' +
+        '<div class="product-actions mt-3">' +
+        '<a href="/products/' + slug + '" class="btn btn-sm btn-primary"><i class="bi bi-eye me-1"></i>View Details</a>' +
+        '<button class="btn btn-sm btn-outline-primary add-to-cart" data-product-id="' + escapeHtml(p.id) + '" data-product-name="' + name + '" data-product-price="' + escapeHtml(p.price) + '" onclick="event.preventDefault(); addToCart(this.dataset)"><i class="bi bi-cart-plus me-1"></i>Add</button>' +
+        '</div></div></div></div>';
+}
+
+function updateResultSummary(count) {
+    var summary = document.getElementById('resultSummary');
+    if (summary) summary.textContent = count + (count === 1 ? ' product shown' : ' products shown');
+}
+
+function applyFilters() {
+    var category = document.getElementById('categoryFilter')?.value || '';
+    var sort = document.getElementById('sortFilter')?.value || '';
+    var search = document.getElementById('searchFilter')?.value || '';
+    var params = [];
+    if (category) params.push('category=' + encodeURIComponent(category));
+    if (sort) params.push('sort=' + encodeURIComponent(sort));
+    if (search) params.push('search=' + encodeURIComponent(search));
+
+    var button = document.getElementById('applyFilters');
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Filtering';
+    }
+
+    fetch('/api/products?' + params.join('&'))
+        .then(function(r) {
+            if (!r.ok) throw new Error('Unable to load products');
+            return r.json();
+        })
+        .then(function(products) {
+            var grid = document.getElementById('productGrid');
+            if (!grid) return;
+            updateResultSummary(products.length);
+            if (products.length === 0) {
+                grid.innerHTML = '<div class="col-12"><div class="empty-state text-center py-5 px-3"><i class="bi bi-box text-muted" style="font-size: 3rem;"></i><p class="text-muted mt-3 mb-0">No products match your criteria.</p></div></div>';
+                return;
+            }
+            grid.innerHTML = products.map(renderProductCard).join('');
+            updateCartBadge();
+        })
+        .catch(function(err) {
+            showAlert('Error: ' + err.message, 'danger');
+        })
+        .finally(function() {
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = '<i class="bi bi-search me-2"></i>Apply Filters';
+            }
+        });
+}
+
+document.getElementById('applyFilters')?.addEventListener('click', applyFilters);
+document.getElementById('searchFilter')?.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') applyFilters();
+});
+document.getElementById('clearFilters')?.addEventListener('click', function() {
+    document.getElementById('categoryFilter').value = '';
+    document.getElementById('sortFilter').value = 'newest';
+    document.getElementById('searchFilter').value = '';
+    applyFilters();
+});
+</script>
+{% endblock %}

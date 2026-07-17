@@ -1,0 +1,96 @@
+{% extends 'admin/base.html' %}
+{% block title %}Inquiries — Admin{% endblock %}
+{% block content %}
+
+<ul class="nav nav-tabs mb-4" id="inquiryTabs">
+    <li class="nav-item">
+        <button class="nav-link active fw-semibold small" data-type="contact" onclick="switchTab('contact')">Contact Inquiries</button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link fw-semibold small" data-type="project" onclick="switchTab('project')">Project Requests</button>
+    </li>
+</ul>
+
+<div id="inquiriesSection">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="small">ID</th>
+                            <th class="small">Name</th>
+                            <th class="small">Email</th>
+                            <th class="small">Subject / Type</th>
+                            <th class="small">Message</th>
+                            <th class="small">Status</th>
+                            <th class="small">Date</th>
+                            <th class="small">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inquiriesBody">
+                        <tr><td colspan="8" class="text-muted text-center small py-4">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+var currentTab = 'contact';
+
+function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('#inquiryTabs .nav-link').forEach(function(b) {
+        b.classList.toggle('active', b.dataset.type === tab);
+    });
+    renderInquiries();
+}
+
+function renderInquiries() {
+    var url = currentTab === 'contact' ? '/api/admin/inquiries' : '/api/admin/project-requests';
+    fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(items) {
+            var tbody = document.getElementById('inquiriesBody');
+            if (!items.length) { tbody.innerHTML = '<tr><td colspan="8" class="text-muted text-center small py-4">No ' + currentTab + ' inquiries.</td></tr>'; return; }
+            tbody.innerHTML = items.map(function(item) {
+                var badgeClass = item.status === 'new' ? 'primary' : item.status === 'in_progress' || item.status === 'reviewing' ? 'warning' : 'success';
+                var date = item.created_at ? new Date(item.created_at).toLocaleDateString() : '—';
+                var subject = currentTab === 'contact' ? (item.subject || item.service_type) : item.project_type || 'Custom Project';
+                return '<tr>' +
+                    '<td class="small text-muted">' + item.id + '</td>' +
+                    '<td class="small fw-semibold">' + item.name + '</td>' +
+                    '<td class="small text-muted">' + item.email + '</td>' +
+                    '<td class="small text-muted">' + subject + '</td>' +
+                    '<td class="small text-muted" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">' + (item.message || item.description || '') + '</td>' +
+                    '<td><span class="badge bg-' + badgeClass + ' bg-opacity-10 text-' + badgeClass + ' small">' + item.status + '</span></td>' +
+                    '<td class="small text-muted">' + date + '</td>' +
+                    '<td>' +
+                    '<select class="form-select form-select-sm" style="width: auto;" onchange="updateInquiryStatus(' + item.id + ', this.value)">' +
+                    '<option value="new"' + (item.status === 'new' ? ' selected' : '') + '>New</option>' +
+                    '<option value="in_progress"' + (item.status === 'in_progress' ? ' selected' : '') + '>In Progress</option>' +
+                    '<option value="resolved"' + (item.status === 'resolved' ? ' selected' : '') + '>Resolved</option>' +
+                    '<option value="reviewing"' + (item.status === 'reviewing' ? ' selected' : '') + '>Reviewing</option>' +
+                    '<option value="contacted"' + (item.status === 'contacted' ? ' selected' : '') + '>Contacted</option>' +
+                    '<option value="closed"' + (item.status === 'closed' ? ' selected' : '') + '>Closed</option>' +
+                    '</select>' +
+                    '</td></tr>';
+            }).join('');
+        });
+}
+
+function updateInquiryStatus(id, status) {
+    fetch('/api/admin/inquiries/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: status })
+    }).then(function() { renderInquiries(); });
+}
+
+renderInquiries();
+</script>
+{% endblock %}

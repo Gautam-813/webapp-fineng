@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}About Us — TheFinanceCompany{% endblock %}
+{% block content %}
+
+<section class="py-5">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item active">About</li>
+            </ol>
+        </nav>
+
+        <div class="row g-5">
+            <div class="col-lg-8">
+                <h1 class="fw-bold mb-4">About TheFinanceCompany</h1>
+                <p class="lead text-muted">We build professional financial software for traders who demand reliability, performance, and transparency.</p>
+
+                <h5 class="fw-bold mt-4">Our Mission</h5>
+                <p>To bridge the gap between complex trading strategies and practical, deployable software. We believe that great trading tools should be accessible, well-documented, and backed by real support.</p>
+
+                <h5 class="fw-bold mt-4">What We Do</h5>
+                <p>We specialize in developing Expert Advisors (EAs) for MetaTrader 4 and MetaTrader 5 platforms. Our products are built by experienced developers who understand both the technical and financial sides of algorithmic trading.</p>
+                <p>Beyond our catalog of pre-built EAs, we offer custom software development services for traders and financial firms with unique requirements. Whether you need a bespoke trading algorithm, a custom indicator, or a full trading infrastructure, we can help.</p>
+
+                <h5 class="fw-bold mt-4">Our Values</h5>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <div class="d-flex gap-3">
+                            <i class="bi bi-shield-check text-success fs-4"></i>
+                            <div>
+                                <h6 class="fw-bold">Security First</h6>
+                                <p class="small text-muted">Your data and transactions are protected at every step.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex gap-3">
+                            <i class="bi bi-arrow-repeat text-primary fs-4"></i>
+                            <div>
+                                <h6 class="fw-bold">Reliability</h6>
+                                <p class="small text-muted">Our EAs are tested and built for consistent performance.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex gap-3">
+                            <i class="bi bi-headset text-info fs-4"></i>
+                            <div>
+                                <h6 class="fw-bold">Support</h6>
+                                <p class="small text-muted">We stand behind our products with responsive technical support.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex gap-3">
+                            <i class="bi bi-eye text-warning fs-4"></i>
+                            <div>
+                                <h6 class="fw-bold">Transparency</h6>
+                                <p class="small text-muted">Clear pricing, realistic expectations, no hidden terms.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm bg-light">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-graph-up-arrow me-2 text-primary"></i>Quick Facts</h5>
+                        <ul class="list-unstyled small">
+                            <li class="mb-2"><strong>Founded:</strong> 2024</li>
+                            <li class="mb-2"><strong>Platforms:</strong> MT4, MT5, Custom</li>
+                            <li class="mb-2"><strong>Products:</strong> 15+ EAs</li>
+                            <li class="mb-2"><strong>Clients:</strong> 500+ Traders</li>
+                        </ul>
+                        <hr>
+                        <p class="small text-muted mb-0">Have a project in mind? We'd love to hear about it.</p>
+                        <a href="/contact" class="btn btn-primary w-100 mt-3">Get in Touch</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

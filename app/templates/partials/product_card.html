@@ -1,0 +1,43 @@
+<div class="col">
+    <div class="card h-100 border-0 shadow-sm product-card">
+        <div class="card-img-wrapper bg-light text-center p-3">
+            {% if product.thumbnail_url %}
+                <img src="{{ product.thumbnail_url }}" class="card-img-top product-thumbnail" alt="{{ product.name }}">
+            {% else %}
+                <div class="placeholder-img d-flex align-items-center justify-content-center text-secondary" style="height: 180px;">
+                    <i class="bi bi-box" style="font-size: 3rem;"></i>
+                </div>
+            {% endif %}
+        </div>
+        <div class="card-body d-flex flex-column">
+            {% if product.category %}
+                <span class="category-pill small align-self-start mb-2 px-2 py-1">{{ product.category.name }}</span>
+            {% endif %}
+            <h5 class="card-title fw-bold mb-1">
+                <a href="/products/{{ product.slug }}" class="text-decoration-none">{{ product.name }}</a>
+            </h5>
+            {% if product.short_description %}
+                <p class="card-text text-muted small flex-grow-1">{{ product.short_description[:120] }}{% if product.short_description|length > 120 %}...{% endif %}</p>
+            {% endif %}
+            {% if product.platform %}
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <span class="platform-badge"><i class="bi bi-cpu me-1"></i>{{ product.platform }}</span>
+                    {% if product.version %}
+                        <span class="platform-badge">v{{ product.version }}</span>
+                    {% endif %}
+                </div>
+            {% endif %}
+            <div class="mt-3">
+                <span class="fs-5 fw-bold text-primary">${{ product.price }}</span>
+            </div>
+            <div class="product-actions mt-3">
+                <a href="/products/{{ product.slug }}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-eye me-1"></i>View Details
+                </a>
+                <button class="btn btn-sm btn-outline-primary add-to-cart" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price }}" onclick="event.preventDefault(); addToCart(this.dataset)">
+                    <i class="bi bi-cart-plus me-1"></i>Add
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
