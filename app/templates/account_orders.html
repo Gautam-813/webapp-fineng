@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}My Orders - TheFinanceCompany{% endblock %}
+{% block content %}
+
+<section class="account-hero py-5">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item"><a href="/account" class="text-decoration-none">Account</a></li>
+                <li class="breadcrumb-item active">Orders</li>
+            </ol>
+        </nav>
+        <span class="category-pill small mb-3 px-3 py-2">Order History</span>
+        <h1 class="display-6 fw-bold mb-2">Your orders</h1>
+        <p class="lead text-muted mb-0">Review demo checkout confirmations and payment status as production payment and licensing flows come online.</p>
+    </div>
+</section>
+
+<section class="pb-5 account-shell" data-account-page="orders">
+    <div class="container">
+        {% include 'partials/account_nav.html' %}
+
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="account-stat-card"><span class="text-muted small">Total Orders</span><strong id="accountOrderCount">0</strong></div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="account-stat-card"><span class="text-muted small">Confirmed</span><strong class="text-success" id="accountConfirmedCount">0</strong></div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="account-stat-card"><span class="text-muted small">Paid Orders</span><strong class="text-primary" id="accountPaidCount">0</strong></div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="account-stat-card"><span class="text-muted small">Order Value</span><strong id="accountOrderValue">$0.00</strong></div>
+            </div>
+        </div>
+
+        <div class="account-panel">
+            <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
+                <div>
+                    <h2 class="h5 fw-bold mb-1">Order History</h2>
+                    <p class="text-muted small mb-0">Orders are matched to your logged-in account and email address.</p>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <select class="form-select form-select-sm account-filter-select" id="accountStatusFilter">
+                        <option value="">All statuses</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="paid">Paid</option>
+                        <option value="pending">Pending</option>
+                        <option value="failed">Failed</option>
+                        <option value="refunded">Refunded</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                    <select class="form-select form-select-sm account-filter-select" id="accountPageSize">
+                        <option value="5">5 / page</option>
+                        <option value="10" selected>10 / page</option>
+                        <option value="20">20 / page</option>
+                        <option value="50">50 / page</option>
+                    </select>
+                </div>
+            </div>
+            <div id="accountOrdersList">
+                <p class="text-muted small mb-0">Loading orders...</p>
+            </div>
+            <div class="account-pagination pt-3 mt-3 border-top">
+                <div class="text-muted small" id="accountPageSummary">Showing 0 orders</div>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Account order pagination">
+                    <button type="button" class="btn btn-outline-secondary" id="accountPrevPage"><i class="bi bi-chevron-left"></i></button>
+                    <button type="button" class="btn btn-outline-secondary disabled" id="accountCurrentPage">Page 1</button>
+                    <button type="button" class="btn btn-outline-secondary" id="accountNextPage"><i class="bi bi-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/account.js?v=20260723-customer-portal"></script>
+{% endblock %}

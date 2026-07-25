@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     var contactForm = document.getElementById('contactForm');
-    var projectForm = document.getElementById('projectForm');
+    var projectForm = document.getElementById('projectRequestForm');
 
     if (contactForm) {
         contactForm.addEventListener('submit', function(e) {
@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function submitContact(url, form, btnId) {
     var btn = document.getElementById(btnId);
+    var isProjectRequest = url.includes('custom-project');
     var formData = form === document.getElementById('contactForm')
         ? {
             name: document.getElementById('contactName').value.trim(),
@@ -50,7 +51,7 @@ function submitContact(url, form, btnId) {
 
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>' + (isProjectRequest ? 'Submitting...' : 'Sending...');
     }
 
     fetch(url, {
@@ -65,10 +66,10 @@ function submitContact(url, form, btnId) {
     .then(function(data) {
         form.reset();
         form.classList.remove('was-validated');
-        showAlert('Message sent successfully! We will get back to you shortly.', 'success');
+        showAlert(data.message || (isProjectRequest ? 'Project request submitted successfully.' : 'Message sent successfully.'), 'success');
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = url.includes('custom-project')
+            btn.innerHTML = isProjectRequest
                 ? '<i class="bi bi-code-slash me-2"></i>Submit Project Request'
                 : '<i class="bi bi-send me-2"></i>Send Message';
         }
@@ -77,7 +78,7 @@ function submitContact(url, form, btnId) {
         showAlert('Error: ' + err.message, 'danger');
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = url.includes('custom-project')
+            btn.innerHTML = isProjectRequest
                 ? '<i class="bi bi-code-slash me-2"></i>Submit Project Request'
                 : '<i class="bi bi-send me-2"></i>Send Message';
         }

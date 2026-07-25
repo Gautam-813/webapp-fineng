@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}Customer Portal - TheFinanceCompany{% endblock %}
+{% block content %}
+
+<section class="account-hero py-5">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item active">Customer Portal</li>
+            </ol>
+        </nav>
+        <div class="row g-4 align-items-end">
+            <div class="col-lg-8">
+                <span class="category-pill small mb-3 px-3 py-2">Customer Workspace</span>
+                <h1 class="display-6 fw-bold mb-2">Your trading software workspace</h1>
+                <p class="lead text-muted mb-0">Track demo orders, manage your profile, and prepare for downloads and license delivery once those systems are connected.</p>
+            </div>
+            <div class="col-lg-4">
+                <div class="account-profile-panel">
+                    <div class="auth-icon"><i class="bi bi-person-circle"></i></div>
+                    <div>
+                        <span class="small text-muted">Signed in as</span>
+                        <strong id="accountName">Loading...</strong>
+                        <span id="accountEmail" class="small text-muted"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="pb-5 account-shell" data-account-page="dashboard">
+    <div class="container">
+        {% include 'partials/account_nav.html' %}
+
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="account-stat-card">
+                    <span class="text-muted small">Total Orders</span>
+                    <strong id="accountOrderCount">0</strong>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="account-stat-card">
+                    <span class="text-muted small">Confirmed</span>
+                    <strong class="text-success" id="accountConfirmedCount">0</strong>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="account-stat-card">
+                    <span class="text-muted small">Paid Orders</span>
+                    <strong class="text-primary" id="accountPaidCount">0</strong>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="account-stat-card">
+                    <span class="text-muted small">Order Value</span>
+                    <strong id="accountOrderValue">$0.00</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="account-panel mb-4">
+                    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
+                        <div>
+                            <h2 class="h5 fw-bold mb-1">Recent Orders</h2>
+                            <p class="text-muted small mb-0">Demo checkout orders connected to your account email.</p>
+                        </div>
+                        <a href="/account/orders" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-receipt me-1"></i>View All Orders
+                        </a>
+                    </div>
+                    <div id="accountRecentOrders">
+                        <p class="text-muted small mb-0">Loading recent orders...</p>
+                    </div>
+                </div>
+
+                <div class="account-panel account-dark-panel">
+                    <div>
+                        <span class="small text-uppercase">Next best step</span>
+                        <h2 class="h5 fw-bold mb-2">Need a custom EA, copier, dashboard, or indicator?</h2>
+                        <p class="mb-0">Send a structured project brief from your account so the team can review your requirements with your customer profile attached.</p>
+                    </div>
+                    <a href="/account/projects" class="btn btn-success">
+                        <i class="bi bi-tools me-1"></i>Start Project Brief
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="account-panel mb-4">
+                    <h2 class="h5 fw-bold mb-3">Delivery Center</h2>
+                    <div class="account-next-row">
+                        <i class="bi bi-download"></i>
+                        <div>
+                            <strong>Downloads</strong>
+                            <span>Product files will appear here after the licensing delivery system is connected.</span>
+                        </div>
+                    </div>
+                    <div class="account-next-row">
+                        <i class="bi bi-key"></i>
+                        <div>
+                            <strong>Licenses</strong>
+                            <span>License keys and activations are reserved for the upcoming licensing integration.</span>
+                        </div>
+                    </div>
+                    <div class="account-next-row">
+                        <i class="bi bi-shield-check"></i>
+                        <div>
+                            <strong>Truthful status</strong>
+                            <span>No fake files or keys are shown until the real backend is ready.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="account-panel">
+                    <h2 class="h5 fw-bold mb-3">Quick Actions</h2>
+                    <div class="d-grid gap-2">
+                        <a href="/products" class="btn btn-primary"><i class="bi bi-box-seam me-1"></i>Browse Products</a>
+                        <a href="/account/support" class="btn btn-outline-secondary"><i class="bi bi-life-preserver me-1"></i>Contact Support</a>
+                        <a href="/account/profile" class="btn btn-outline-secondary"><i class="bi bi-person-gear me-1"></i>Manage Profile</a>
+                        <button type="button" class="btn btn-outline-danger" data-account-logout>
+                            <i class="bi bi-box-arrow-right me-1"></i>Log Out
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/account.js?v=20260723-customer-portal"></script>
+{% endblock %}

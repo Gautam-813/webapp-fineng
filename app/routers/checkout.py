@@ -3,16 +3,19 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import Product, Order, OrderItem
+from app.models import Product, Order, OrderItem, User
 from app.schemas import CheckoutRequest, CheckoutResponse
+from app.routers.auth import get_optional_user
+from app.security import rate_limit
 
 router = APIRouter(prefix="/api", tags=["checkout"])
 
 
-@router.post("/checkout", response_model=CheckoutResponse)
+@router.post("/checkout", response_model=CheckoutResponse, dependencies=[Depends(rate_limit("checkout_submit", 30, 600))])
 def checkout(
     req: CheckoutRequest,
     db: Session = Depends(get_db),
+    current_user: User | None = Depends(get_optional_user),
 ):
     order_items_data = []
     subtotal = Decimal("0")
@@ -38,8 +41,9 @@ def checkout(
         })
 
     order = Order(
+        user_id=current_user.id if current_user else None,
         customer_name=req.customer_name,
-        customer_email=req.customer_email,
+        customer_email=current_user.email if current_user else req.customer_email,
         status="confirmed",
         subtotal=subtotal,
         total_amount=subtotal,
@@ -51,6 +55,8 @@ def checkout(
     for oi in order_items_data:
         db.add(OrderItem(order_id=order.id, **oi))
 
+    db.commit()
+    db.refresh(order)
     confirmation_url = f"/order/confirmation?order_id={order.id}"
 
     return CheckoutResponse(order_id=order.id, confirmation_url=confirmation_url)

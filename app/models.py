@@ -16,12 +16,35 @@ class User(Base):
     full_name = Column(String(255))
     phone = Column(String(50))
     role = Column(String(20), default="customer")
+    status = Column(String(20), default="active")
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     carts = relationship("Cart", back_populates="user")
     orders = relationship("Order", back_populates="user")
     licenses = relationship("License", back_populates="user")
+    email_otps = relationship("EmailOTP", back_populates="user", cascade="all, delete-orphan")
+
+
+class EmailOTP(Base):
+    __tablename__ = "email_otps"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
+    email = Column(String(255), nullable=False, index=True)
+    purpose = Column(String(50), nullable=False, index=True)
+    code_hash = Column(String(255), nullable=False)
+    attempts = Column(Integer, default=0)
+    max_attempts = Column(Integer, default=5)
+    expires_at = Column(DateTime, nullable=False)
+    consumed_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = relationship("User", back_populates="email_otps")
+
+    __table_args__ = (
+        Index("idx_email_otps_lookup", "email", "purpose", "consumed_at"),
+    )
 
 
 class ProductCategory(Base):

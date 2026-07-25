@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
-{% block title %}Contact Us — TheFinanceCompany{% endblock %}
+{% block title %}Contact - TheFinanceCompany{% endblock %}
 {% block content %}
 
-<section class="py-5">
+<section class="contact-hero py-5">
     <div class="container">
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb">
@@ -11,174 +11,248 @@
             </ol>
         </nav>
 
-        <h1 class="fw-bold mb-2">Get in Touch</h1>
-        <p class="text-muted mb-5">Have a question, need support, or want to discuss a custom project? We're here to help.</p>
+        <div class="row g-4 align-items-end">
+            <div class="col-lg-8">
+                <span class="category-pill small mb-3 px-3 py-2">Build With Us</span>
+                <h1 class="display-5 fw-bold mb-3">Tell us what you need your trading software to do.</h1>
+                <p class="lead text-muted mb-0">Use this page for product questions, EA support, copier requirements, indicators, automation tools, or a custom algo-trading software build.</p>
+            </div>
+            <div class="col-lg-4">
+                <div class="contact-response-card">
+                    <div class="contact-response-icon"><i class="bi bi-lightning-charge"></i></div>
+                    <div>
+                        <span class="small text-muted">Typical response</span>
+                        <strong>Within 24 hours</strong>
+                        <p class="small text-muted mb-0">Requests are saved directly into the admin inquiry pipeline.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-        <div class="row g-5">
-            <div class="col-lg-7">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <ul class="nav nav-tabs mb-4" id="contactTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active fw-semibold" id="generalTab" data-bs-toggle="tab" data-bs-target="#generalForm" type="button">General Inquiry</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link fw-semibold" id="projectTab" data-bs-toggle="tab" data-bs-target="#projectForm" type="button">Custom Project</button>
-                            </li>
-                        </ul>
+<section class="contact-expectations py-4">
+    <div class="container">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="contact-expectation">
+                    <i class="bi bi-inbox"></i>
+                    <div>
+                        <strong>Request received</strong>
+                        <span>Your inquiry is saved directly into the admin pipeline.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="contact-expectation">
+                    <i class="bi bi-search"></i>
+                    <div>
+                        <strong>Reviewed by context</strong>
+                        <span>We look at platform, requirements, urgency, and support needs.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="contact-expectation">
+                    <i class="bi bi-chat-dots"></i>
+                    <div>
+                        <strong>Clear next step</strong>
+                        <span>You get a response about product help, scope, or custom build fit.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-                        <div class="tab-content">
-                            <div class="tab-pane fade show active" id="generalForm">
-                                <form id="contactForm" novalidate>
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label small fw-semibold">Name <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="contactName" required>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label small fw-semibold">Email <span class="text-danger">*</span></label>
-                                            <input type="email" class="form-control" id="contactEmail" required>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label small fw-semibold">Phone</label>
-                                            <input type="tel" class="form-control" id="contactPhone">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label small fw-semibold">Company</label>
-                                            <input type="text" class="form-control" id="contactCompany">
-                                        </div>
-                                        <div class="col-12">
-                                            <label class="form-label small fw-semibold">Inquiry Type</label>
-                                            <select class="form-select" id="contactServiceType">
-                                                <option value="general">General Inquiry</option>
-                                                <option value="product_support">Product Support</option>
-                                                <option value="custom_development">Custom Development</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-12">
-                                            <label class="form-label small fw-semibold">Subject</label>
-                                            <input type="text" class="form-control" id="contactSubject">
-                                        </div>
-                                        <div class="col-12">
-                                            <label class="form-label small fw-semibold">Message <span class="text-danger">*</span></label>
-                                            <textarea class="form-control" id="contactMessage" rows="5" required></textarea>
-                                        </div>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary btn-lg w-100 mt-4 py-2 fw-semibold" id="contactSubmitBtn">
-                                        <i class="bi bi-send me-2"></i>Send Message
-                                    </button>
-                                </form>
+<section class="pb-5">
+    <div class="container">
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-8">
+                <div class="contact-form-panel">
+                    <div class="contact-tab-switch mb-4" role="tablist" aria-label="Contact forms">
+                        <button class="active" id="generalTab" data-bs-toggle="tab" data-bs-target="#generalPane" type="button" role="tab">
+                            <i class="bi bi-envelope me-1"></i>General Inquiry
+                        </button>
+                        <button id="projectTab" data-bs-toggle="tab" data-bs-target="#projectPane" type="button" role="tab">
+                            <i class="bi bi-tools me-1"></i>Custom Software Request
+                        </button>
+                    </div>
+
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="generalPane" role="tabpanel" aria-labelledby="generalTab">
+                            <div class="contact-form-heading mb-4">
+                                <h2 class="h4 fw-bold mb-1">Send a message</h2>
+                                <p class="text-muted mb-0">Best for product questions, support, partnerships, and general business inquiries.</p>
                             </div>
-
-                            <div class="tab-pane fade" id="projectForm">
-                                <form id="projectForm" novalidate>
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label small fw-semibold">Name <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="projectName" required>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label small fw-semibold">Email <span class="text-danger">*</span></label>
-                                            <input type="email" class="form-control" id="projectEmail" required>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label small fw-semibold">Phone</label>
-                                            <input type="tel" class="form-control" id="projectPhone">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label small fw-semibold">Company</label>
-                                            <input type="text" class="form-control" id="projectCompany">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label small fw-semibold">Project Type</label>
-                                            <input type="text" class="form-control" id="projectType" placeholder="e.g., Custom EA, Indicator, Trading System">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label small fw-semibold">Budget Range</label>
-                                            <select class="form-select" id="projectBudget">
-                                                <option value="">Select range...</option>
-                                                <option value="Under $1,000">Under $1,000</option>
-                                                <option value="$1,000 - $5,000">$1,000 - $5,000</option>
-                                                <option value="$5,000 - $10,000">$5,000 - $10,000</option>
-                                                <option value="$10,000 - $25,000">$10,000 - $25,000</option>
-                                                <option value="$25,000+">$25,000+</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label small fw-semibold">Timeline</label>
-                                            <input type="text" class="form-control" id="projectTimeline" placeholder="e.g., 1 month, 3 months">
-                                        </div>
-                                        <div class="col-12">
-                                            <label class="form-label small fw-semibold">Project Description <span class="text-danger">*</span></label>
-                                            <textarea class="form-control" id="projectDescription" rows="5" required placeholder="Describe your project requirements in detail..."></textarea>
-                                        </div>
+                            <form id="contactForm" novalidate>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold" for="contactName">Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="contactName" autocomplete="name" required>
+                                        <div class="invalid-feedback">Please enter your name.</div>
                                     </div>
-                                    <button type="submit" class="btn btn-success btn-lg w-100 mt-4 py-2 fw-semibold" id="projectSubmitBtn">
-                                        <i class="bi bi-code-slash me-2"></i>Submit Project Request
-                                    </button>
-                                </form>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold" for="contactEmail">Email <span class="text-danger">*</span></label>
+                                        <input type="email" class="form-control" id="contactEmail" autocomplete="email" required>
+                                        <div class="invalid-feedback">Please enter a valid email.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold" for="contactPhone">Phone</label>
+                                        <input type="tel" class="form-control" id="contactPhone" autocomplete="tel">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold" for="contactCompany">Company</label>
+                                        <input type="text" class="form-control" id="contactCompany" autocomplete="organization">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold" for="contactServiceType">Inquiry Type</label>
+                                        <select class="form-select" id="contactServiceType">
+                                            <option value="general">General Inquiry</option>
+                                            <option value="product_support">Product Support</option>
+                                            <option value="ea_question">Expert Advisor Question</option>
+                                            <option value="trade_copier">Trade Copier</option>
+                                            <option value="indicator">Indicator or Tool</option>
+                                            <option value="custom_development">Custom Development</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold" for="contactSubject">Subject</label>
+                                        <input type="text" class="form-control" id="contactSubject" placeholder="Example: MT5 copier setup question">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label small fw-semibold" for="contactMessage">Message <span class="text-danger">*</span></label>
+                                        <textarea class="form-control" id="contactMessage" rows="6" required placeholder="Share the product, platform, issue, or business question."></textarea>
+                                        <div class="invalid-feedback">Please add a short message.</div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-lg w-100 mt-4 py-2 fw-semibold" id="contactSubmitBtn">
+                                    <i class="bi bi-send me-2"></i>Send Message
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="tab-pane fade" id="projectPane" role="tabpanel" aria-labelledby="projectTab">
+                            <div class="contact-form-heading mb-4">
+                                <h2 class="h4 fw-bold mb-1">Request custom software</h2>
+                                <p class="text-muted mb-0">Best for custom EAs, indicators, trade copiers, dashboards, automation, and consulting.</p>
                             </div>
+                            <form id="projectRequestForm" novalidate>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold" for="projectName">Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="projectName" autocomplete="name" required>
+                                        <div class="invalid-feedback">Please enter your name.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold" for="projectEmail">Email <span class="text-danger">*</span></label>
+                                        <input type="email" class="form-control" id="projectEmail" autocomplete="email" required>
+                                        <div class="invalid-feedback">Please enter a valid email.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold" for="projectPhone">Phone</label>
+                                        <input type="tel" class="form-control" id="projectPhone" autocomplete="tel">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold" for="projectCompany">Company</label>
+                                        <input type="text" class="form-control" id="projectCompany" autocomplete="organization">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold" for="projectType">Project Type</label>
+                                        <select class="form-select" id="projectType">
+                                            <option value="">Select type...</option>
+                                            <option value="Custom Expert Advisor">Custom Expert Advisor</option>
+                                            <option value="Trade Copier">Trade Copier</option>
+                                            <option value="Indicator">Indicator</option>
+                                            <option value="Trading Dashboard">Trading Dashboard</option>
+                                            <option value="Automation Tool">Automation Tool</option>
+                                            <option value="Consulting">Consulting</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold" for="projectBudget">Budget Range</label>
+                                        <select class="form-select" id="projectBudget">
+                                            <option value="">Select range...</option>
+                                            <option value="Under $1,000">Under $1,000</option>
+                                            <option value="$1,000 - $5,000">$1,000 - $5,000</option>
+                                            <option value="$5,000 - $10,000">$5,000 - $10,000</option>
+                                            <option value="$10,000 - $25,000">$10,000 - $25,000</option>
+                                            <option value="$25,000+">$25,000+</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold" for="projectTimeline">Timeline</label>
+                                        <select class="form-select" id="projectTimeline">
+                                            <option value="">Select timeline...</option>
+                                            <option value="ASAP">ASAP</option>
+                                            <option value="2 - 4 weeks">2 - 4 weeks</option>
+                                            <option value="1 - 3 months">1 - 3 months</option>
+                                            <option value="3+ months">3+ months</option>
+                                            <option value="Flexible">Flexible</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label small fw-semibold" for="projectDescription">Project Description <span class="text-danger">*</span></label>
+                                        <textarea class="form-control" id="projectDescription" rows="7" required placeholder="Tell us the strategy rules, platforms, symbols, risk controls, dashboard needs, integrations, or existing files you have."></textarea>
+                                        <div class="invalid-feedback">Please describe the custom build.</div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-success btn-lg w-100 mt-4 py-2 fw-semibold" id="projectSubmitBtn">
+                                    <i class="bi bi-code-slash me-2"></i>Submit Project Request
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-5">
-                <div class="card border-0 shadow-sm bg-light mb-4">
-                    <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3"><i class="bi bi-headset me-2 text-primary"></i>Contact Information</h5>
-                        <div class="d-flex gap-3 mb-3">
-                            <i class="bi bi-envelope text-primary fs-5"></i>
-                            <div>
-                                <small class="text-muted">Email</small>
-                                <div>support@thefinancecompany.com</div>
-                            </div>
+
+            <div class="col-lg-4">
+                <div class="contact-side-panel mb-4">
+                    <h2 class="h5 fw-bold mb-3">What we can help with</h2>
+                    <div class="contact-help-row">
+                        <i class="bi bi-cpu"></i>
+                        <div>
+                            <strong>Expert Advisors</strong>
+                            <span>Rule-based EAs for MT4 and MT5.</span>
                         </div>
-                        <div class="d-flex gap-3">
-                            <i class="bi bi-clock text-primary fs-5"></i>
-                            <div>
-                                <small class="text-muted">Response Time</small>
-                                <div>Within 24 hours</div>
-                            </div>
+                    </div>
+                    <div class="contact-help-row">
+                        <i class="bi bi-diagram-3"></i>
+                        <div>
+                            <strong>Trade Copiers</strong>
+                            <span>Master-slave copying, account routing, and risk scaling.</span>
+                        </div>
+                    </div>
+                    <div class="contact-help-row">
+                        <i class="bi bi-activity"></i>
+                        <div>
+                            <strong>Indicators and Tools</strong>
+                            <span>Signals, panels, dashboards, and semi-automation.</span>
+                        </div>
+                    </div>
+                    <div class="contact-help-row">
+                        <i class="bi bi-shield-check"></i>
+                        <div>
+                            <strong>Risk Controls</strong>
+                            <span>Position sizing, limits, filters, and monitoring logic.</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3"><i class="bi bi-question-circle me-2 text-info"></i>FAQ</h5>
-                        <div class="accordion" id="faqAccordion">
-                            <div class="accordion-item border-0">
-                                <h6 class="accordion-header">
-                                    <button class="accordion-button collapsed bg-transparent fw-semibold small" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                                        How do I receive my EA after purchase?
-                                    </button>
-                                </h6>
-                                <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                    <div class="accordion-body small text-muted">After successful payment, you'll receive a download link and license key via email. Most EAs are available for immediate download.</div>
-                                </div>
-                            </div>
-                            <div class="accordion-item border-0">
-                                <h6 class="accordion-header">
-                                    <button class="accordion-button collapsed bg-transparent fw-semibold small" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                                        Do you offer refunds?
-                                    </button>
-                                </h6>
-                                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                    <div class="accordion-body small text-muted">Due to the digital nature of our products, all sales are final. Please review product details carefully before purchasing. Contact us if you have any questions before buying.</div>
-                                </div>
-                            </div>
-                            <div class="accordion-item border-0">
-                                <h6 class="accordion-header">
-                                    <button class="accordion-button collapsed bg-transparent fw-semibold small" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                                        What platforms do you support?
-                                    </button>
-                                </h6>
-                                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                    <div class="accordion-body small text-muted">We primarily develop for MetaTrader 4 (MT4) and MetaTrader 5 (MT5). Custom development is available for other platforms.</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="contact-side-panel mb-4">
+                    <h2 class="h5 fw-bold mb-3">A useful brief includes</h2>
+                    <ul class="contact-check-list">
+                        <li><i class="bi bi-check2"></i>Platform: MT4, MT5, or other</li>
+                        <li><i class="bi bi-check2"></i>Entry, exit, and filter rules</li>
+                        <li><i class="bi bi-check2"></i>Risk and lot-sizing rules</li>
+                        <li><i class="bi bi-check2"></i>Inputs, alerts, reports, or dashboards</li>
+                    </ul>
+                </div>
+
+                <div class="risk-panel p-4">
+                    <h2 class="h6 fw-bold mb-2"><i class="bi bi-exclamation-triangle me-2"></i>Trading Risk</h2>
+                    <p class="small mb-0">Algorithmic tools can improve execution and consistency, but they do not guarantee profits. Test any strategy carefully before live trading.</p>
                 </div>
             </div>
         </div>
@@ -187,5 +261,5 @@
 
 {% endblock %}
 {% block scripts %}
-<script src="/static/js/contact.js"></script>
+<script src="/static/js/contact.js?v=20260717-contact-polish"></script>
 {% endblock %}

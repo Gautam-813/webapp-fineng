@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}Custom Projects - TheFinanceCompany{% endblock %}
+{% block content %}
+
+<section class="account-hero py-5">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item"><a href="/account" class="text-decoration-none">Account</a></li>
+                <li class="breadcrumb-item active">Projects</li>
+            </ol>
+        </nav>
+        <span class="category-pill small mb-3 px-3 py-2">Custom Software</span>
+        <h1 class="display-6 fw-bold mb-2">Custom project requests</h1>
+        <p class="lead text-muted mb-0">Request custom EAs, indicators, copiers, dashboards, and automation tools from your account.</p>
+    </div>
+</section>
+
+<section class="pb-5 account-shell" data-account-page="projects">
+    <div class="container">
+        {% include 'partials/account_nav.html' %}
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="account-panel">
+                    <h2 class="h5 fw-bold mb-3">Submit Project Brief</h2>
+                    <form id="accountProjectForm" novalidate>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="projectName">Name</label>
+                                <input type="text" class="form-control" id="projectName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="projectEmail">Email</label>
+                                <input type="email" class="form-control" id="projectEmail" required readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="projectPhone">Phone</label>
+                                <input type="tel" class="form-control" id="projectPhone">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="projectCompany">Company</label>
+                                <input type="text" class="form-control" id="projectCompany">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="projectType">Project Type</label>
+                                <select class="form-select" id="projectType">
+                                    <option value="Custom Expert Advisor">Custom Expert Advisor</option>
+                                    <option value="Trade Copier">Trade Copier</option>
+                                    <option value="Custom Indicator">Custom Indicator</option>
+                                    <option value="Dashboard">Dashboard</option>
+                                    <option value="Automation Tool">Automation Tool</option>
+                                    <option value="Consulting">Consulting</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="projectBudget">Budget Range</label>
+                                <select class="form-select" id="projectBudget">
+                                    <option value="">Not sure yet</option>
+                                    <option value="$500 - $1,500">$500 - $1,500</option>
+                                    <option value="$1,500 - $5,000">$1,500 - $5,000</option>
+                                    <option value="$5,000+">$5,000+</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold" for="projectTimeline">Timeline</label>
+                                <input type="text" class="form-control" id="projectTimeline" placeholder="Example: 2 weeks, urgent, flexible">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold" for="projectDescription">Project Description</label>
+                                <textarea class="form-control" id="projectDescription" rows="7" required placeholder="Describe strategy rules, platforms, symbols, risk controls, dashboard requirements, integrations, and any existing files or screenshots."></textarea>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success mt-4" id="projectSubmitBtn">
+                            <i class="bi bi-code-slash me-1"></i>Submit Project Request
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="account-panel mb-4">
+                    <h2 class="h5 fw-bold mb-3">Project Stats</h2>
+                    <div class="row g-3">
+                        <div class="col-6"><div class="account-mini-stat"><span>Total</span><strong id="projectTotal">0</strong></div></div>
+                        <div class="col-6"><div class="account-mini-stat"><span>New</span><strong id="projectNew">0</strong></div></div>
+                        <div class="col-6"><div class="account-mini-stat"><span>In Progress</span><strong id="projectInProgress">0</strong></div></div>
+                        <div class="col-6"><div class="account-mini-stat"><span>Completed</span><strong id="projectCompleted">0</strong></div></div>
+                    </div>
+                </div>
+                <div class="account-panel">
+                    <h2 class="h5 fw-bold mb-3">Your Requests</h2>
+                    <div id="accountProjectsList">
+                        <p class="text-muted small mb-0">Loading project requests...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/account.js?v=20260723-customer-portal"></script>
+{% endblock %}

@@ -161,6 +161,9 @@ class OrderOut(BaseModel):
 
 class AdminStats(BaseModel):
     total_products: int
+    active_products: int
     total_orders: int
+    confirmed_orders: int
     total_inquiries: int
+    project_requests: int
     revenue: Decimal

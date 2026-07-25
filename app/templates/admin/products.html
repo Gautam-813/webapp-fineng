@@ -44,14 +44,25 @@
     <div class="admin-toolbar">
         <div class="input-group admin-search">
             <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-            <input type="search" class="form-control" id="productSearch" placeholder="Search product name, category, or platform">
+            <input type="search" class="form-control" id="productSearch" placeholder="Search product name, slug, category, platform, or version">
         </div>
-        <select class="form-select admin-status-filter" id="statusFilter">
-            <option value="">All statuses</option>
-            <option value="active">Active</option>
-            <option value="draft">Draft</option>
-            <option value="inactive">Inactive</option>
-        </select>
+        <div class="d-flex gap-2 flex-wrap">
+            <select class="form-select admin-status-filter" id="categoryFilter">
+                <option value="">All categories</option>
+            </select>
+            <select class="form-select admin-status-filter" id="statusFilter">
+                <option value="">All statuses</option>
+                <option value="active">Active</option>
+                <option value="draft">Draft</option>
+                <option value="inactive">Inactive</option>
+            </select>
+            <select class="form-select admin-status-filter" id="pageSizeSelect">
+                <option value="10">10 / page</option>
+                <option value="20" selected>20 / page</option>
+                <option value="50">50 / page</option>
+                <option value="100">100 / page</option>
+            </select>
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -71,6 +82,18 @@
                 <tr><td colspan="7" class="text-muted text-center small py-4">Loading...</td></tr>
             </tbody>
         </table>
+    </div>
+    <div class="admin-pagination pt-3 mt-3 border-top">
+        <div class="text-muted small" id="productPageSummary">Showing 0 products</div>
+        <div class="btn-group btn-group-sm" role="group" aria-label="Product pagination">
+            <button type="button" class="btn btn-outline-secondary" id="prevPageBtn">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary disabled" id="currentPageBtn">Page 1 of 1</button>
+            <button type="button" class="btn btn-outline-secondary" id="nextPageBtn">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
     </div>
 </div>
 
@@ -97,6 +120,13 @@
 <script>
 var deleteProductId = null;
 var allProducts = [];
+var productPage = {
+    page: 1,
+    pageSize: 20,
+    total: 0,
+    pages: 1
+};
+var searchTimer = null;
 
 function escapeAdminHtml(value) {
     return String(value || '').replace(/[&<>"']/g, function(ch) {
@@ -111,33 +141,42 @@ function escapeAdminHtml(value) {
 }
 
 function statusBadge(status) {
-    var badgeClass = status === 'active' ? 'success' : status === 'inactive' ? 'secondary' : 'warning';
-    return '<span class="badge bg-' + badgeClass + ' bg-opacity-10 text-' + badgeClass + ' small">' + escapeAdminHtml(status || 'draft') + '</span>';
+    var cleanStatus = status || 'draft';
+    var badgeClass = cleanStatus === 'active' ? 'success' : cleanStatus === 'inactive' ? 'secondary' : 'warning';
+    return '<span class="badge bg-' + badgeClass + ' bg-opacity-10 text-' + badgeClass + ' small">' + escapeAdminHtml(cleanStatus) + '</span>';
 }
 
-function updateStats(products) {
-    document.getElementById('statTotal').textContent = products.length;
-    document.getElementById('statActive').textContent = products.filter(function(p) { return p.status === 'active'; }).length;
-    document.getElementById('statHidden').textContent = products.filter(function(p) { return p.status !== 'active'; }).length;
-    document.getElementById('statFeatured').textContent = products.filter(function(p) { return p.featured; }).length;
+function updateStats(stats) {
+    document.getElementById('statTotal').textContent = stats.total_products || 0;
+    document.getElementById('statActive').textContent = stats.active_products || 0;
+    document.getElementById('statHidden').textContent = stats.hidden_products || 0;
+    document.getElementById('statFeatured').textContent = stats.featured_products || 0;
+}
+
+function currentProductParams(page) {
+    var status = document.getElementById('statusFilter').value;
+    var categoryId = document.getElementById('categoryFilter').value;
+    var search = document.getElementById('productSearch').value.trim();
+    var pageSize = parseInt(document.getElementById('pageSizeSelect').value, 10) || 20;
+    var params = new URLSearchParams({
+        page: page || productPage.page,
+        page_size: pageSize
+    });
+    if (status) params.set('status', status);
+    if (categoryId) params.set('category_id', categoryId);
+    if (search) params.set('search', search);
+    return params;
 }
 
 function renderProducts() {
-    var status = document.getElementById('statusFilter').value;
-    var search = document.getElementById('productSearch').value.trim().toLowerCase();
-    var products = allProducts.filter(function(p) {
-        var matchesStatus = !status || p.status === status;
-        var haystack = [p.name, p.category_name, p.platform, p.version].join(' ').toLowerCase();
-        return matchesStatus && (!search || haystack.indexOf(search) !== -1);
-    });
-
     var tbody = document.getElementById('productsBody');
-    if (!products.length) {
+    if (!allProducts.length) {
         tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center small py-4">No products match the current filters.</td></tr>';
+        updatePagination();
         return;
     }
 
-    tbody.innerHTML = products.map(function(p) {
+    tbody.innerHTML = allProducts.map(function(p) {
         var image = p.thumbnail_url
             ? '<img src="' + escapeAdminHtml(p.thumbnail_url) + '" alt="' + escapeAdminHtml(p.name) + '">'
             : '<i class="bi bi-box"></i>';
@@ -148,36 +187,76 @@ function renderProducts() {
             '<div class="admin-product-thumb">' + image + '</div>' +
             '<div>' +
             '<a href="/admin/products/' + p.id + '/edit" class="fw-semibold text-decoration-none">' + escapeAdminHtml(p.name) + '</a>' +
-            '<div class="text-muted small">#' + p.id + (p.version ? ' · v' + escapeAdminHtml(p.version) : '') + '</div>' +
+            '<div class="text-muted small">#' + p.id + (p.version ? ' &middot; v' + escapeAdminHtml(p.version) : '') + '</div>' +
             '</div>' +
             '</div>' +
             '</td>' +
             '<td class="small text-muted">' + escapeAdminHtml(p.category_name || 'Uncategorized') + '</td>' +
             '<td class="small">' + (p.platform ? '<span class="platform-badge">' + escapeAdminHtml(p.platform) + '</span>' : '<span class="text-muted">None</span>') + '</td>' +
-            '<td class="small fw-semibold">$' + parseFloat(p.price).toFixed(2) + '</td>' +
+            '<td class="small fw-semibold">$' + parseFloat(p.price || 0).toFixed(2) + '</td>' +
             '<td>' + statusBadge(p.status) + '</td>' +
             '<td class="small">' + featuredIcon + '</td>' +
             '<td class="text-end">' +
             '<a href="/products/' + encodeURIComponent(p.slug) + '" class="btn btn-sm btn-outline-secondary me-1" title="View product"><i class="bi bi-eye"></i></a>' +
             '<a href="/admin/products/' + p.id + '/edit" class="btn btn-sm btn-outline-primary me-1" title="Edit"><i class="bi bi-pencil"></i></a>' +
-            '<button class="btn btn-sm btn-outline-danger" onclick="confirmDelete(' + p.id + ', \'' + escapeAdminHtml(p.name).replace(/'/g, "\\'") + '\')" title="Delete"><i class="bi bi-trash"></i></button>' +
+            '<button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(' + p.id + ')" title="Delete"><i class="bi bi-trash"></i></button>' +
             '</td></tr>';
     }).join('');
+    updatePagination();
 }
 
-function loadProducts() {
-    fetch('/api/admin/products')
-        .then(function(r) { return r.json(); })
-        .then(function(products) {
-            allProducts = products;
-            updateStats(products);
-            renderProducts();
+function updatePagination() {
+    var start = productPage.total ? ((productPage.page - 1) * productPage.pageSize) + 1 : 0;
+    var end = Math.min(productPage.page * productPage.pageSize, productPage.total);
+    document.getElementById('productPageSummary').textContent = 'Showing ' + start + '-' + end + ' of ' + productPage.total + ' products';
+    document.getElementById('currentPageBtn').textContent = 'Page ' + productPage.page + ' of ' + productPage.pages;
+    document.getElementById('prevPageBtn').disabled = productPage.page <= 1;
+    document.getElementById('nextPageBtn').disabled = productPage.page >= productPage.pages;
+}
+
+function loadCategories() {
+    return fetch('/api/admin/categories')
+        .then(function(r) {
+            if (!r.ok) throw new Error('Unable to load categories');
+            return r.json();
+        })
+        .then(function(categories) {
+            var select = document.getElementById('categoryFilter');
+            select.innerHTML = '<option value="">All categories</option>' + categories.map(function(category) {
+                return '<option value="' + category.id + '">' + escapeAdminHtml(category.name) + '</option>';
+            }).join('');
         });
 }
 
-function confirmDelete(id, name) {
+function loadProducts(page) {
+    var params = currentProductParams(page || productPage.page);
+    document.getElementById('productsBody').innerHTML = '<tr><td colspan="7" class="text-muted text-center small py-4">Loading products...</td></tr>';
+    return fetch('/api/admin/products?' + params.toString())
+        .then(function(r) {
+            if (!r.ok) throw new Error('Unable to load products');
+            return r.json();
+        })
+        .then(function(data) {
+            allProducts = data.items || [];
+            productPage.page = data.page || 1;
+            productPage.pageSize = data.page_size || parseInt(document.getElementById('pageSizeSelect').value, 10) || 20;
+            productPage.total = data.total || 0;
+            productPage.pages = data.pages || 1;
+            updateStats(data.stats || {});
+            renderProducts();
+        })
+        .catch(function(err) {
+            document.getElementById('productsBody').innerHTML = '<tr><td colspan="7" class="text-danger text-center small py-4">' + escapeAdminHtml(err.message) + '</td></tr>';
+            productPage.total = 0;
+            productPage.pages = 1;
+            updatePagination();
+        });
+}
+
+function confirmDelete(id) {
+    var product = allProducts.find(function(item) { return item.id === id; });
     deleteProductId = id;
-    document.getElementById('deleteProductName').textContent = name;
+    document.getElementById('deleteProductName').textContent = product ? product.name : 'this product';
     new bootstrap.Modal(document.getElementById('deleteModal')).show();
 }
 
@@ -187,14 +266,29 @@ document.getElementById('confirmDeleteBtn')?.addEventListener('click', function(
         .then(function(r) {
             if (r.ok || r.status === 204) {
                 bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
-                loadProducts();
+                loadProducts(productPage.page);
             }
         });
 });
 
-document.getElementById('productSearch').addEventListener('input', renderProducts);
-document.getElementById('statusFilter').addEventListener('change', renderProducts);
+document.getElementById('productSearch').addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function() {
+        loadProducts(1);
+    }, 250);
+});
+document.getElementById('statusFilter').addEventListener('change', function() { loadProducts(1); });
+document.getElementById('categoryFilter').addEventListener('change', function() { loadProducts(1); });
+document.getElementById('pageSizeSelect').addEventListener('change', function() { loadProducts(1); });
+document.getElementById('prevPageBtn').addEventListener('click', function() {
+    if (productPage.page > 1) loadProducts(productPage.page - 1);
+});
+document.getElementById('nextPageBtn').addEventListener('click', function() {
+    if (productPage.page < productPage.pages) loadProducts(productPage.page + 1);
+});
 
-loadProducts();
+loadCategories().finally(function() {
+    loadProducts(1);
+});
 </script>
 {% endblock %}

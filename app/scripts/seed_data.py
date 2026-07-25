@@ -21,6 +21,7 @@ def seed():
                 full_name="Admin",
                 password_hash=pwd_context.hash("admin123"),
                 role="admin",
+                status="active",
             ))
             print("Admin user created: admin@thefinancecompany.com / admin123")
         else:

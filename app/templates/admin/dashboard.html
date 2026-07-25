@@ -1,108 +1,139 @@
 {% extends 'admin/base.html' %}
-{% block title %}Dashboard — Admin{% endblock %}
+{% block title %}Dashboard - Admin{% endblock %}
 {% block content %}
 
-<h4 class="fw-bold mb-4">Dashboard</h4>
+<div class="admin-page-header mb-4">
+    <div>
+        <span class="category-pill small mb-2 px-3 py-2">Control Center</span>
+        <h4 class="fw-bold mb-1">Dashboard</h4>
+        <p class="text-muted mb-0">Track products, demo orders, paid revenue, and customer inquiries.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="/admin/products/new" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>Add Product
+        </a>
+        <a href="/" class="btn btn-outline-primary">
+            <i class="bi bi-house me-1"></i>View Site
+        </a>
+    </div>
+</div>
 
-<div class="row g-4 mb-4" id="statsRow">
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-muted small mb-1">Total Products</p>
-                        <h3 class="fw-bold mb-0" id="statProducts">—</h3>
-                    </div>
-                    <i class="bi bi-box text-primary fs-2 opacity-50"></i>
-                </div>
+<div class="row g-3 mb-4" id="statsRow">
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card admin-stat-accent">
+            <div>
+                <span class="text-muted small">Active Products</span>
+                <strong id="statActiveProducts">0</strong>
+                <small class="text-muted d-block"><span id="statTotalProducts">0</span> total catalog items</small>
+            </div>
+            <i class="bi bi-box-seam text-primary"></i>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card admin-stat-accent">
+            <div>
+                <span class="text-muted small">Confirmed Orders</span>
+                <strong class="text-success" id="statConfirmedOrders">0</strong>
+                <small class="text-muted d-block"><span id="statTotalOrders">0</span> total orders</small>
+            </div>
+            <i class="bi bi-cart-check text-success"></i>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card admin-stat-accent">
+            <div>
+                <span class="text-muted small">Inquiries</span>
+                <strong id="statInquiries">0</strong>
+                <small class="text-muted d-block"><span id="statProjectRequests">0</span> project requests</small>
+            </div>
+            <i class="bi bi-envelope text-info"></i>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card admin-stat-accent">
+            <div>
+                <span class="text-muted small">Paid Revenue</span>
+                <strong class="text-primary" id="statRevenue">$0.00</strong>
+                <small class="text-muted d-block">Only paid orders counted</small>
+            </div>
+            <i class="bi bi-currency-dollar text-warning"></i>
+        </div>
+    </div>
+</div>
+
+<div class="admin-demo-note mb-4">
+    <div>
+        <h6 class="fw-bold mb-1"><i class="bi bi-info-circle me-2"></i>Demo order mode is active</h6>
+        <p class="small mb-0">Checkout creates orders with <strong>confirmed</strong> status. Use <strong>paid</strong> only after real payment integration is connected.</p>
+    </div>
+    <a href="/admin/orders" class="btn btn-sm btn-outline-primary">Review Orders</a>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="admin-panel h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="bi bi-cart me-2 text-success"></i>Recent Orders</h5>
+                <a href="/admin/orders" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table admin-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="small">Order</th>
+                            <th class="small">Customer</th>
+                            <th class="small">Total</th>
+                            <th class="small">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentOrdersBody">
+                        <tr><td colspan="4" class="text-muted text-center small py-3">Loading...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-muted small mb-1">Total Orders</p>
-                        <h3 class="fw-bold mb-0" id="statOrders">—</h3>
-                    </div>
-                    <i class="bi bi-cart text-success fs-2 opacity-50"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-muted small mb-1">Inquiries</p>
-                        <h3 class="fw-bold mb-0" id="statInquiries">—</h3>
-                    </div>
-                    <i class="bi bi-envelope text-info fs-2 opacity-50"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-muted small mb-1">Revenue</p>
-                        <h3 class="fw-bold mb-0" id="statRevenue">$—</h3>
-                    </div>
-                    <i class="bi bi-currency-dollar text-warning fs-2 opacity-50"></i>
-                </div>
+    <div class="col-lg-4">
+        <div class="admin-panel h-100">
+            <h5 class="fw-bold mb-3"><i class="bi bi-lightning-charge me-2 text-warning"></i>Quick Actions</h5>
+            <div class="d-grid gap-2">
+                <a href="/admin/products/new" class="btn btn-primary text-start">
+                    <i class="bi bi-plus-lg me-2"></i>Add new product
+                </a>
+                <a href="/admin/products" class="btn btn-outline-primary text-start">
+                    <i class="bi bi-box me-2"></i>Manage catalog
+                </a>
+                <a href="/admin/orders" class="btn btn-outline-primary text-start">
+                    <i class="bi bi-cart-check me-2"></i>Review orders
+                </a>
+                <a href="/admin/inquiries" class="btn btn-outline-primary text-start">
+                    <i class="bi bi-envelope me-2"></i>Review inquiries
+                </a>
             </div>
         </div>
     </div>
 </div>
 
 <div class="row g-4">
-    <div class="col-md-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-0 fw-bold py-3">
-                <i class="bi bi-box me-2 text-primary"></i>Recent Products
+    <div class="col-lg-6">
+        <div class="admin-panel h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="bi bi-box me-2 text-primary"></i>Recent Products</h5>
+                <a href="/admin/products" class="btn btn-sm btn-outline-primary">View All</a>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0" id="recentProductsTable">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="small">Name</th>
-                                <th class="small">Price</th>
-                                <th class="small">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recentProductsBody">
-                            <tr><td colspan="3" class="text-muted text-center small py-3">Loading...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div id="recentProductsBody">
+                <div class="text-muted text-center small py-3">Loading...</div>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-0 fw-bold py-3">
-                <i class="bi bi-cart me-2 text-success"></i>Recent Orders
+    <div class="col-lg-6">
+        <div class="admin-panel h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="bi bi-chat-dots me-2 text-info"></i>Recent Inquiries</h5>
+                <a href="/admin/inquiries" class="btn btn-sm btn-outline-primary">View All</a>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0" id="recentOrdersTable">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="small">Customer</th>
-                                <th class="small">Total</th>
-                                <th class="small">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recentOrdersBody">
-                            <tr><td colspan="3" class="text-muted text-center small py-3">Loading...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div id="recentInquiriesBody">
+                <div class="text-muted text-center small py-3">Loading...</div>
             </div>
         </div>
     </div>
@@ -111,34 +142,114 @@
 {% endblock %}
 {% block scripts %}
 <script>
+function escapeAdminHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function(ch) {
+        return {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[ch];
+    });
+}
+
+function formatMoney(value) {
+    return '$' + parseFloat(value || 0).toFixed(2);
+}
+
+function statusBadge(status) {
+    var badgeClass = (status === 'paid' || status === 'confirmed' || status === 'active') ? 'success' : status === 'pending' || status === 'draft' || status === 'new' ? 'warning' : status === 'failed' ? 'danger' : 'secondary';
+    return '<span class="badge bg-' + badgeClass + ' bg-opacity-10 text-' + badgeClass + ' small">' + escapeAdminHtml(status || 'new') + '</span>';
+}
+
+function productRow(p) {
+    var image = p.thumbnail_url
+        ? '<img src="' + escapeAdminHtml(p.thumbnail_url) + '" alt="' + escapeAdminHtml(p.name) + '">'
+        : '<i class="bi bi-box"></i>';
+    return '<div class="admin-list-row">' +
+        '<div class="admin-product-thumb">' + image + '</div>' +
+        '<div class="flex-grow-1">' +
+        '<a href="/admin/products/' + p.id + '/edit" class="fw-semibold text-decoration-none">' + escapeAdminHtml(p.name) + '</a>' +
+        '<div class="text-muted small">' + escapeAdminHtml(p.category_name || 'Uncategorized') + ' · ' + formatMoney(p.price) + '</div>' +
+        '</div>' +
+        '<div>' + statusBadge(p.status) + '</div>' +
+        '</div>';
+}
+
+function inquiryRow(item, type) {
+    var title = type === 'project' ? (item.project_type || 'Custom project') : (item.subject || item.service_type || 'Contact inquiry');
+    return '<div class="admin-list-row align-items-start">' +
+        '<div class="admin-list-icon"><i class="bi ' + (type === 'project' ? 'bi-tools' : 'bi-envelope') + '"></i></div>' +
+        '<div class="flex-grow-1">' +
+        '<div class="fw-semibold small">' + escapeAdminHtml(item.name) + '</div>' +
+        '<div class="text-muted small">' + escapeAdminHtml(title) + '</div>' +
+        '<div class="text-muted small">' + escapeAdminHtml(item.email) + '</div>' +
+        '</div>' +
+        '<div>' + statusBadge(item.status) + '</div>' +
+        '</div>';
+}
+
 fetch('/api/admin/stats')
     .then(function(r) { return r.json(); })
     .then(function(s) {
-        document.getElementById('statProducts').textContent = s.total_products;
-        document.getElementById('statOrders').textContent = s.total_orders;
+        document.getElementById('statActiveProducts').textContent = s.active_products;
+        document.getElementById('statTotalProducts').textContent = s.total_products;
+        document.getElementById('statConfirmedOrders').textContent = s.confirmed_orders;
+        document.getElementById('statTotalOrders').textContent = s.total_orders;
         document.getElementById('statInquiries').textContent = s.total_inquiries;
-        document.getElementById('statRevenue').textContent = '$' + parseFloat(s.revenue).toFixed(2);
+        document.getElementById('statProjectRequests').textContent = s.project_requests;
+        document.getElementById('statRevenue').textContent = formatMoney(s.revenue);
     });
 
-fetch('/api/admin/products?status=active')
+fetch('/api/admin/orders?page=1&page_size=6')
     .then(function(r) { return r.json(); })
-    .then(function(products) {
-        var tbody = document.getElementById('recentProductsBody');
-        if (!products.length) { tbody.innerHTML = '<tr><td colspan="3" class="text-muted text-center small py-3">No products yet.</td></tr>'; return; }
-        tbody.innerHTML = products.slice(0, 5).map(function(p) {
-            return '<tr><td class="small"><a href="/admin/products/' + p.id + '/edit" class="text-decoration-none">' + p.name + '</a></td><td class="small">$' + parseFloat(p.price).toFixed(2) + '</td><td><span class="badge bg-success bg-opacity-10 text-success">' + p.status + '</span></td></tr>';
-        }).join('');
-    });
-
-fetch('/api/admin/orders')
-    .then(function(r) { return r.json(); })
-    .then(function(orders) {
+    .then(function(data) {
+        var orders = data.items || [];
         var tbody = document.getElementById('recentOrdersBody');
-        if (!orders.length) { tbody.innerHTML = '<tr><td colspan="3" class="text-muted text-center small py-3">No orders yet.</td></tr>'; return; }
-        tbody.innerHTML = orders.slice(0, 5).map(function(o) {
-            var badge = (o.status === 'paid' || o.status === 'confirmed') ? 'success' : o.status === 'pending' ? 'warning' : 'secondary';
-            return '<tr><td class="small">' + o.customer_name + '</td><td class="small">$' + parseFloat(o.total_amount).toFixed(2) + '</td><td><span class="badge bg-' + badge + ' bg-opacity-10 text-' + badge + '">' + o.status + '</span></td></tr>';
+        if (!orders.length) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-muted text-center small py-3">No orders yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = orders.map(function(o) {
+            return '<tr>' +
+                '<td class="small fw-semibold">#' + o.id + '</td>' +
+                '<td><div class="small fw-semibold">' + escapeAdminHtml(o.customer_name) + '</div><div class="text-muted small">' + escapeAdminHtml(o.customer_email) + '</div></td>' +
+                '<td class="small fw-semibold">' + formatMoney(o.total_amount) + '</td>' +
+                '<td>' + statusBadge(o.status) + '</td>' +
+                '</tr>';
         }).join('');
     });
+
+fetch('/api/admin/products?page=1&page_size=5')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        var products = data.items || [];
+        var container = document.getElementById('recentProductsBody');
+        if (!products.length) {
+            container.innerHTML = '<div class="text-muted text-center small py-3">No products yet.</div>';
+            return;
+        }
+        container.innerHTML = products.map(productRow).join('');
+    });
+
+Promise.all([
+    fetch('/api/admin/inquiries?page=1&page_size=5').then(function(r) { return r.json(); }),
+    fetch('/api/admin/project-requests?page=1&page_size=5').then(function(r) { return r.json(); })
+]).then(function(results) {
+    var contact = (results[0].items || []).map(function(i) { i._type = 'contact'; return i; });
+    var projects = (results[1].items || []).map(function(i) { i._type = 'project'; return i; });
+    var all = contact.concat(projects).sort(function(a, b) {
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+    });
+    var container = document.getElementById('recentInquiriesBody');
+    if (!all.length) {
+        container.innerHTML = '<div class="text-muted text-center small py-3">No inquiries yet.</div>';
+        return;
+    }
+    container.innerHTML = all.slice(0, 5).map(function(item) {
+        return inquiryRow(item, item._type);
+    }).join('');
+});
 </script>
 {% endblock %}

@@ -1,37 +1,181 @@
 {% extends 'admin/base.html' %}
-{% block title %}Inquiries — Admin{% endblock %}
+{% block title %}Inquiries - Admin{% endblock %}
 {% block content %}
 
-<ul class="nav nav-tabs mb-4" id="inquiryTabs">
-    <li class="nav-item">
-        <button class="nav-link active fw-semibold small" data-type="contact" onclick="switchTab('contact')">Contact Inquiries</button>
-    </li>
-    <li class="nav-item">
-        <button class="nav-link fw-semibold small" data-type="project" onclick="switchTab('project')">Project Requests</button>
-    </li>
-</ul>
+<div class="admin-page-header mb-4">
+    <div>
+        <span class="category-pill small mb-2 px-3 py-2">Client Pipeline</span>
+        <h4 class="fw-bold mb-1">Inquiries</h4>
+        <p class="text-muted mb-0">Review contact messages and custom software requests from one workspace.</p>
+    </div>
+    <button type="button" class="btn btn-outline-primary" id="refreshInquiriesBtn">
+        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+    </button>
+</div>
 
-<div id="inquiriesSection">
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="small">ID</th>
-                            <th class="small">Name</th>
-                            <th class="small">Email</th>
-                            <th class="small">Subject / Type</th>
-                            <th class="small">Message</th>
-                            <th class="small">Status</th>
-                            <th class="small">Date</th>
-                            <th class="small">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="inquiriesBody">
-                        <tr><td colspan="8" class="text-muted text-center small py-4">Loading...</td></tr>
-                    </tbody>
-                </table>
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card">
+            <span class="text-muted small">Contact Inquiries</span>
+            <strong id="statContactTotal">0</strong>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card">
+            <span class="text-muted small">Project Requests</span>
+            <strong id="statProjectTotal">0</strong>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card">
+            <span class="text-muted small">New</span>
+            <strong class="text-primary" id="statNewTotal">0</strong>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card">
+            <span class="text-muted small">Active Follow-up</span>
+            <strong class="text-warning" id="statActiveTotal">0</strong>
+        </div>
+    </div>
+</div>
+
+<div class="admin-panel">
+    <div class="admin-inquiry-tabs mb-3" role="tablist" aria-label="Inquiry type">
+        <button type="button" class="active" data-queue="contact">
+            <i class="bi bi-envelope me-1"></i>Contact Inquiries
+        </button>
+        <button type="button" data-queue="project">
+            <i class="bi bi-tools me-1"></i>Project Requests
+        </button>
+    </div>
+
+    <div class="admin-toolbar">
+        <div class="input-group admin-search">
+            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+            <input type="search" class="form-control" id="inquirySearch" placeholder="Search name, email, company, topic, or message">
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <select class="form-select admin-status-filter" id="statusFilter">
+                <option value="">All statuses</option>
+                <option value="new">New</option>
+                <option value="in_progress">In Progress</option>
+                <option value="reviewing">Reviewing</option>
+                <option value="contacted">Contacted</option>
+                <option value="resolved">Resolved</option>
+                <option value="closed">Closed</option>
+            </select>
+            <select class="form-select admin-status-filter" id="pageSizeSelect">
+                <option value="10">10 / page</option>
+                <option value="20" selected>20 / page</option>
+                <option value="50">50 / page</option>
+                <option value="100">100 / page</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table admin-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="small">Client</th>
+                    <th class="small">Topic</th>
+                    <th class="small">Message</th>
+                    <th class="small">Status</th>
+                    <th class="small">Date</th>
+                    <th class="small text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="inquiriesBody">
+                <tr><td colspan="6" class="text-muted text-center small py-4">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="admin-pagination pt-3 mt-3 border-top">
+        <div class="text-muted small" id="inquiryPageSummary">Showing 0 inquiries</div>
+        <div class="btn-group btn-group-sm" role="group" aria-label="Inquiry pagination">
+            <button type="button" class="btn btn-outline-secondary" id="prevPageBtn">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary disabled" id="currentPageBtn">Page 1 of 1</button>
+            <button type="button" class="btn btn-outline-secondary" id="nextPageBtn">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="inquiryModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <div>
+                    <h5 class="modal-title fw-bold mb-1" id="inquiryModalTitle">Inquiry Details</h5>
+                    <p class="text-muted small mb-0" id="inquiryModalSubtitle"></p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="admin-detail-box">
+                            <span class="text-muted small">Client</span>
+                            <strong id="modalClientName"></strong>
+                            <span class="small text-muted" id="modalClientCompany"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="admin-detail-box">
+                            <span class="text-muted small">Email</span>
+                            <strong class="admin-detail-value" id="modalClientEmail"></strong>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="admin-detail-box">
+                            <span class="text-muted small">Phone</span>
+                            <strong class="admin-detail-value" id="modalClientPhone"></strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-8">
+                        <div class="admin-detail-box h-100">
+                            <span class="text-muted small" id="modalTopicLabel">Topic</span>
+                            <strong id="modalTopic"></strong>
+                            <span class="small text-muted" id="modalTopicMeta"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="admin-detail-box h-100">
+                            <span class="text-muted small">Status</span>
+                            <div id="modalStatusBadge"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-message-box mb-4">
+                    <span class="text-muted small" id="modalMessageLabel">Message</span>
+                    <p class="mb-0" id="modalMessage"></p>
+                </div>
+
+                <div class="admin-detail-box">
+                    <label class="form-label small fw-semibold">Update Status</label>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <select class="form-select" id="modalStatusSelect" style="max-width: 220px;">
+                            <option value="new">New</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="reviewing">Reviewing</option>
+                            <option value="contacted">Contacted</option>
+                            <option value="resolved">Resolved</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                        <button type="button" class="btn btn-primary" id="modalSaveStatusBtn">
+                            <i class="bi bi-check-lg me-1"></i>Save Status
+                        </button>
+                    </div>
+                    <p class="text-muted small mb-0 mt-2">Use statuses to track whether the team has reviewed, contacted, resolved, or closed each lead.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -40,57 +184,278 @@
 {% endblock %}
 {% block scripts %}
 <script>
-var currentTab = 'contact';
+var currentQueue = 'contact';
+var allContacts = [];
+var allProjects = [];
+var selectedInquiry = null;
+var searchTimer = null;
+var queuePages = {
+    contact: { page: 1, pageSize: 20, total: 0, pages: 1 },
+    project: { page: 1, pageSize: 20, total: 0, pages: 1 }
+};
 
-function switchTab(tab) {
-    currentTab = tab;
-    document.querySelectorAll('#inquiryTabs .nav-link').forEach(function(b) {
-        b.classList.toggle('active', b.dataset.type === tab);
+var statusLabels = {
+    new: 'New',
+    in_progress: 'In Progress',
+    reviewing: 'Reviewing',
+    contacted: 'Contacted',
+    resolved: 'Resolved',
+    closed: 'Closed'
+};
+
+function escapeAdminHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function(ch) {
+        return {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[ch];
+    });
+}
+
+function formatDate(value) {
+    return value ? new Date(value).toLocaleString() : 'Unknown';
+}
+
+function statusBadge(status) {
+    var cleanStatus = status || 'new';
+    var badgeClass = cleanStatus === 'new' ? 'primary' :
+        (cleanStatus === 'in_progress' || cleanStatus === 'reviewing' || cleanStatus === 'contacted') ? 'warning' :
+        cleanStatus === 'resolved' ? 'success' : 'secondary';
+    return '<span class="badge bg-' + badgeClass + ' bg-opacity-10 text-' + badgeClass + ' small">' +
+        escapeAdminHtml(statusLabels[cleanStatus] || cleanStatus) +
+        '</span>';
+}
+
+function updateStats(stats) {
+    document.getElementById('statContactTotal').textContent = stats.contact_total || 0;
+    document.getElementById('statProjectTotal').textContent = stats.project_total || 0;
+    document.getElementById('statNewTotal').textContent = stats.new_total || 0;
+    document.getElementById('statActiveTotal').textContent = stats.active_total || 0;
+}
+
+function getCurrentItems() {
+    return currentQueue === 'contact' ? allContacts : allProjects;
+}
+
+function getTopic(item) {
+    if (currentQueue === 'contact') {
+        return item.subject || item.service_type || 'Contact inquiry';
+    }
+    return item.project_type || 'Custom software request';
+}
+
+function getMeta(item) {
+    if (currentQueue === 'contact') {
+        return item.service_type ? 'Service: ' + item.service_type : '';
+    }
+    var meta = [];
+    if (item.budget_range) meta.push('Budget: ' + item.budget_range);
+    if (item.timeline) meta.push('Timeline: ' + item.timeline);
+    return meta.join(' | ');
+}
+
+function getMessage(item) {
+    return currentQueue === 'contact' ? (item.message || '') : (item.description || '');
+}
+
+function currentParams(queue, page) {
+    var status = document.getElementById('statusFilter').value;
+    var search = document.getElementById('inquirySearch').value.trim();
+    var pageSize = parseInt(document.getElementById('pageSizeSelect').value, 10) || 20;
+    var params = new URLSearchParams({
+        page: page || queuePages[queue].page,
+        page_size: pageSize
+    });
+    if (status) params.set('status', status);
+    if (search) params.set('search', search);
+    return params;
+}
+
+function renderInquiries() {
+    var items = getCurrentItems();
+    var tbody = document.getElementById('inquiriesBody');
+    if (!items.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-muted text-center small py-4">No inquiries match the current filters.</td></tr>';
+        updatePagination();
+        return;
+    }
+
+    tbody.innerHTML = items.map(function(item) {
+        var topic = getTopic(item);
+        var meta = getMeta(item);
+        var message = getMessage(item);
+        var queueLabel = currentQueue === 'contact' ? 'Contact' : 'Project';
+        return '<tr>' +
+            '<td><div class="fw-semibold small">' + escapeAdminHtml(item.name) + '</div><div class="text-muted small">' + escapeAdminHtml(item.email) + '</div><div class="text-muted small">' + escapeAdminHtml(item.company || 'No company') + '</div></td>' +
+            '<td><div class="fw-semibold small">' + escapeAdminHtml(topic) + '</div><div class="text-muted small">' + escapeAdminHtml(meta || queueLabel) + '</div></td>' +
+            '<td><div class="admin-message-preview small">' + escapeAdminHtml(message || 'No message provided') + '</div></td>' +
+            '<td>' + statusBadge(item.status) + '</td>' +
+            '<td class="text-muted small">' + formatDate(item.created_at) + '</td>' +
+            '<td class="text-end"><button type="button" class="btn btn-sm btn-outline-primary" onclick="openInquiryModal(' + item.id + ')"><i class="bi bi-eye me-1"></i>View</button></td>' +
+            '</tr>';
+    }).join('');
+    updatePagination();
+}
+
+function switchQueue(queue) {
+    currentQueue = queue;
+    document.querySelectorAll('.admin-inquiry-tabs button').forEach(function(button) {
+        button.classList.toggle('active', button.dataset.queue === queue);
     });
     renderInquiries();
 }
 
-function renderInquiries() {
-    var url = currentTab === 'contact' ? '/api/admin/inquiries' : '/api/admin/project-requests';
-    fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(items) {
-            var tbody = document.getElementById('inquiriesBody');
-            if (!items.length) { tbody.innerHTML = '<tr><td colspan="8" class="text-muted text-center small py-4">No ' + currentTab + ' inquiries.</td></tr>'; return; }
-            tbody.innerHTML = items.map(function(item) {
-                var badgeClass = item.status === 'new' ? 'primary' : item.status === 'in_progress' || item.status === 'reviewing' ? 'warning' : 'success';
-                var date = item.created_at ? new Date(item.created_at).toLocaleDateString() : '—';
-                var subject = currentTab === 'contact' ? (item.subject || item.service_type) : item.project_type || 'Custom Project';
-                return '<tr>' +
-                    '<td class="small text-muted">' + item.id + '</td>' +
-                    '<td class="small fw-semibold">' + item.name + '</td>' +
-                    '<td class="small text-muted">' + item.email + '</td>' +
-                    '<td class="small text-muted">' + subject + '</td>' +
-                    '<td class="small text-muted" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">' + (item.message || item.description || '') + '</td>' +
-                    '<td><span class="badge bg-' + badgeClass + ' bg-opacity-10 text-' + badgeClass + ' small">' + item.status + '</span></td>' +
-                    '<td class="small text-muted">' + date + '</td>' +
-                    '<td>' +
-                    '<select class="form-select form-select-sm" style="width: auto;" onchange="updateInquiryStatus(' + item.id + ', this.value)">' +
-                    '<option value="new"' + (item.status === 'new' ? ' selected' : '') + '>New</option>' +
-                    '<option value="in_progress"' + (item.status === 'in_progress' ? ' selected' : '') + '>In Progress</option>' +
-                    '<option value="resolved"' + (item.status === 'resolved' ? ' selected' : '') + '>Resolved</option>' +
-                    '<option value="reviewing"' + (item.status === 'reviewing' ? ' selected' : '') + '>Reviewing</option>' +
-                    '<option value="contacted"' + (item.status === 'contacted' ? ' selected' : '') + '>Contacted</option>' +
-                    '<option value="closed"' + (item.status === 'closed' ? ' selected' : '') + '>Closed</option>' +
-                    '</select>' +
-                    '</td></tr>';
-            }).join('');
+function updatePagination() {
+    var pageInfo = queuePages[currentQueue];
+    var label = currentQueue === 'contact' ? 'contact inquiries' : 'project requests';
+    var start = pageInfo.total ? ((pageInfo.page - 1) * pageInfo.pageSize) + 1 : 0;
+    var end = Math.min(pageInfo.page * pageInfo.pageSize, pageInfo.total);
+    document.getElementById('inquiryPageSummary').textContent = 'Showing ' + start + '-' + end + ' of ' + pageInfo.total + ' ' + label;
+    document.getElementById('currentPageBtn').textContent = 'Page ' + pageInfo.page + ' of ' + pageInfo.pages;
+    document.getElementById('prevPageBtn').disabled = pageInfo.page <= 1;
+    document.getElementById('nextPageBtn').disabled = pageInfo.page >= pageInfo.pages;
+}
+
+function applyQueueData(queue, data) {
+    var pageSize = parseInt(document.getElementById('pageSizeSelect').value, 10) || 20;
+    queuePages[queue].page = data.page || 1;
+    queuePages[queue].pageSize = data.page_size || pageSize;
+    queuePages[queue].total = data.total || 0;
+    queuePages[queue].pages = data.pages || 1;
+    if (queue === 'contact') {
+        allContacts = data.items || [];
+    } else {
+        allProjects = data.items || [];
+    }
+    if (data.stats) {
+        updateStats(data.stats);
+    }
+}
+
+function loadQueue(queue, page) {
+    var url = queue === 'contact' ? '/api/admin/inquiries' : '/api/admin/project-requests';
+    return fetch(url + '?' + currentParams(queue, page || queuePages[queue].page).toString())
+        .then(function(r) {
+            if (!r.ok) throw new Error('Unable to load inquiries');
+            return r.json();
+        })
+        .then(function(data) {
+            applyQueueData(queue, data);
         });
 }
 
-function updateInquiryStatus(id, status) {
-    fetch('/api/admin/inquiries/' + id, {
+function loadInquiries(contactPage, projectPage) {
+    document.getElementById('inquiriesBody').innerHTML = '<tr><td colspan="6" class="text-muted text-center small py-4">Loading...</td></tr>';
+    return Promise.all([
+        loadQueue('contact', contactPage || queuePages.contact.page),
+        loadQueue('project', projectPage || queuePages.project.page)
+    ]).then(function() {
+        renderInquiries();
+    }).catch(function() {
+        document.getElementById('inquiriesBody').innerHTML = '<tr><td colspan="6" class="text-danger text-center small py-4">Unable to load inquiries.</td></tr>';
+        queuePages[currentQueue].total = 0;
+        queuePages[currentQueue].pages = 1;
+        updatePagination();
+    });
+}
+
+function openInquiryModal(id) {
+    var item = getCurrentItems().find(function(entry) { return entry.id === id; });
+    if (!item) return;
+    selectedInquiry = { id: item.id, queue: currentQueue };
+
+    document.getElementById('inquiryModalTitle').textContent = (currentQueue === 'contact' ? 'Contact Inquiry' : 'Project Request') + ' #' + item.id;
+    document.getElementById('inquiryModalSubtitle').textContent = formatDate(item.created_at);
+    document.getElementById('modalClientName').textContent = item.name || '';
+    document.getElementById('modalClientCompany').textContent = item.company || 'No company provided';
+    document.getElementById('modalClientEmail').textContent = item.email || 'No email';
+    document.getElementById('modalClientPhone').textContent = item.phone || 'No phone';
+    document.getElementById('modalTopicLabel').textContent = currentQueue === 'contact' ? 'Subject' : 'Project Type';
+    document.getElementById('modalTopic').textContent = getTopic(item);
+    document.getElementById('modalTopicMeta').textContent = getMeta(item);
+    document.getElementById('modalStatusBadge').innerHTML = statusBadge(item.status);
+    document.getElementById('modalMessageLabel').textContent = currentQueue === 'contact' ? 'Message' : 'Project Brief';
+    document.getElementById('modalMessage').textContent = getMessage(item) || 'No details provided.';
+    document.getElementById('modalStatusSelect').value = item.status || 'new';
+
+    new bootstrap.Modal(document.getElementById('inquiryModal')).show();
+}
+
+function saveSelectedStatus() {
+    if (!selectedInquiry) return;
+    var status = document.getElementById('modalStatusSelect').value;
+    var url = selectedInquiry.queue === 'contact' ?
+        '/api/admin/inquiries/' + selectedInquiry.id :
+        '/api/admin/project-requests/' + selectedInquiry.id;
+
+    fetch(url, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: status })
-    }).then(function() { renderInquiries(); });
+    }).then(function(r) {
+        if (!r.ok) throw new Error('Status update failed');
+        return r.json();
+    }).then(function() {
+        if (selectedInquiry.queue === 'contact') {
+            loadInquiries(queuePages.contact.page, queuePages.project.page);
+        } else {
+            loadInquiries(queuePages.contact.page, queuePages.project.page);
+        }
+        bootstrap.Modal.getInstance(document.getElementById('inquiryModal')).hide();
+    }).catch(function() {
+        alert('Unable to update status. Please try again.');
+    });
 }
 
-renderInquiries();
+document.querySelectorAll('.admin-inquiry-tabs button').forEach(function(button) {
+    button.addEventListener('click', function() {
+        switchQueue(button.dataset.queue);
+    });
+});
+document.getElementById('inquirySearch').addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function() {
+        queuePages.contact.page = 1;
+        queuePages.project.page = 1;
+        loadInquiries(1, 1);
+    }, 250);
+});
+document.getElementById('statusFilter').addEventListener('change', function() {
+    queuePages.contact.page = 1;
+    queuePages.project.page = 1;
+    loadInquiries(1, 1);
+});
+document.getElementById('pageSizeSelect').addEventListener('change', function() {
+    queuePages.contact.page = 1;
+    queuePages.project.page = 1;
+    loadInquiries(1, 1);
+});
+document.getElementById('prevPageBtn').addEventListener('click', function() {
+    var info = queuePages[currentQueue];
+    if (info.page <= 1) return;
+    if (currentQueue === 'contact') {
+        loadInquiries(info.page - 1, queuePages.project.page);
+    } else {
+        loadInquiries(queuePages.contact.page, info.page - 1);
+    }
+});
+document.getElementById('nextPageBtn').addEventListener('click', function() {
+    var info = queuePages[currentQueue];
+    if (info.page >= info.pages) return;
+    if (currentQueue === 'contact') {
+        loadInquiries(info.page + 1, queuePages.project.page);
+    } else {
+        loadInquiries(queuePages.contact.page, info.page + 1);
+    }
+});
+document.getElementById('refreshInquiriesBtn').addEventListener('click', function() {
+    loadInquiries(queuePages.contact.page, queuePages.project.page);
+});
+document.getElementById('modalSaveStatusBtn').addEventListener('click', saveSelectedStatus);
+
+loadInquiries(1, 1);
 </script>
 {% endblock %}

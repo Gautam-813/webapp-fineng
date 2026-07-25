@@ -1,3 +1,15 @@
+# TheFinanceCompany Web App
+
+## Developer QA
+
+Run the reusable smoke test before demos, after deployments, and after changes to buyer or admin flows:
+
+```bash
+python app/scripts/smoke_test.py --base-url http://127.0.0.1:8000
+```
+
+See `docs/production-readiness.md` for the production checklist and launch gaps.
+
 # Website Architecture & Tech Stack Plan for TheFinanceCompany
 
 You are a senior full-stack developer at a fintech company planning the architecture for a new product sales website.

@@ -10,6 +10,27 @@ document.addEventListener('DOMContentLoaded', function() {
     var checkoutTotal = document.getElementById('checkoutTotal');
     var orderTotalText = document.getElementById('orderTotalText');
 
+    fetch('/api/auth/me')
+        .then(function(r) {
+            if (!r.ok) throw new Error('guest');
+            return r.json();
+        })
+        .then(function(user) {
+            if (nameInput && !nameInput.value) nameInput.value = user.full_name || '';
+            if (emailInput) {
+                emailInput.value = user.email || '';
+                emailInput.readOnly = true;
+            }
+            var authNote = document.getElementById('checkoutAuthNote');
+            var guestNote = document.getElementById('checkoutGuestNote');
+            if (authNote) {
+                authNote.classList.remove('d-none');
+                authNote.textContent = 'Signed in as ' + user.email + '. This order will be attached to your account.';
+            }
+            if (guestNote) guestNote.classList.add('d-none');
+        })
+        .catch(function() {});
+
     function renderCheckoutCart() {
         var cartContainer = document.getElementById('checkoutCartItems');
         if (!cartContainer) return Promise.resolve([]);
@@ -18,9 +39,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         return getCart().then(function(cart) {
             if (cart.length === 0) {
-                cartContainer.innerHTML = '<p class="text-muted">Your cart is empty. <a href="/products">Browse products</a></p>';
+                cartContainer.innerHTML =
+                    '<div class="empty-state text-center p-4">' +
+                    '<i class="bi bi-cart3 d-block text-muted mb-3" style="font-size: 2.25rem;"></i>' +
+                    '<h6 class="fw-bold mb-1">Your cart is empty</h6>' +
+                    '<p class="text-muted small mb-3">Add an EA, copier, indicator, or automation tool before placing an order.</p>' +
+                    '<a href="/products" class="btn btn-primary btn-sm">Browse Products</a>' +
+                    '</div>';
                 if (submitBtn) submitBtn.disabled = true;
                 if (checkoutSummary) checkoutSummary.classList.add('d-none');
+                if (checkoutTotal) checkoutTotal.textContent = '$0.00';
+                if (orderTotalText) orderTotalText.textContent = '$0.00';
                 return cart;
             }
 
@@ -75,7 +104,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         getCart().then(function(cart) {
             if (cart.length === 0) {
-                showAlert('Your cart is empty.', 'warning');
+                showAlert('Your cart is empty. Add a product before placing an order.', 'warning');
+                renderCheckoutCart();
                 return;
             }
 

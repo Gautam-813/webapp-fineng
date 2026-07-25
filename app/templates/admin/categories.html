@@ -1,0 +1,282 @@
+{% extends 'admin/base.html' %}
+{% block title %}Categories - Admin{% endblock %}
+{% block content %}
+
+<div class="admin-page-header mb-4">
+    <div>
+        <span class="category-pill small mb-2 px-3 py-2">Catalog Structure</span>
+        <h4 class="fw-bold mb-1">Categories</h4>
+        <p class="text-muted mb-0">Manage the product categories used by the public catalog filters and admin product form.</p>
+    </div>
+    <button type="button" class="btn btn-primary" id="newCategoryBtn">
+        <i class="bi bi-plus-lg me-1"></i>New Category
+    </button>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card">
+            <span class="text-muted small">Categories</span>
+            <strong id="statCategoryTotal">0</strong>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card">
+            <span class="text-muted small">Assigned Products</span>
+            <strong class="text-primary" id="statAssignedProducts">0</strong>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card">
+            <span class="text-muted small">Empty Categories</span>
+            <strong class="text-warning" id="statEmptyCategories">0</strong>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card">
+            <span class="text-muted small">Largest Category</span>
+            <strong id="statLargestCategory">0</strong>
+        </div>
+    </div>
+</div>
+
+<div class="admin-panel">
+    <div class="admin-toolbar">
+        <div class="input-group admin-search">
+            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+            <input type="search" class="form-control" id="categorySearch" placeholder="Search name, slug, or description">
+        </div>
+        <button type="button" class="btn btn-outline-primary" id="refreshCategoriesBtn">
+            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+        </button>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table admin-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="small">Category</th>
+                    <th class="small">Slug</th>
+                    <th class="small">Description</th>
+                    <th class="small">Products</th>
+                    <th class="small text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="categoriesBody">
+                <tr><td colspan="5" class="text-muted text-center small py-4">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="categoryModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <div>
+                    <h5 class="modal-title fw-bold mb-1" id="categoryModalTitle">New Category</h5>
+                    <p class="text-muted small mb-0">Categories organize catalog filters and product placement.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <form id="categoryForm" novalidate>
+                    <input type="hidden" id="categoryId">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold" for="categoryName">Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="categoryName" required placeholder="Expert Advisors">
+                        <div class="invalid-feedback">Category name is required.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold" for="categorySlug">Slug <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="categorySlug" required placeholder="expert-advisors">
+                        <div class="invalid-feedback">Category slug is required.</div>
+                        <div class="form-text">Used in public filter URLs. Use lowercase letters, numbers, and hyphens.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold" for="categoryDescription">Description</label>
+                        <textarea class="form-control" id="categoryDescription" rows="4" placeholder="Short internal or catalog description."></textarea>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="submit" class="btn btn-primary" id="saveCategoryBtn">
+                            <i class="bi bi-check-lg me-1"></i>Save Category
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+var allCategories = [];
+var categoryModal = null;
+
+function escapeAdminHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function(ch) {
+        return {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[ch];
+    });
+}
+
+function slugifyCategory(value) {
+    return String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
+function updateCategoryStats(categories) {
+    var assignedProducts = categories.reduce(function(sum, category) {
+        return sum + (category.product_count || 0);
+    }, 0);
+    var largest = categories.reduce(function(max, category) {
+        return Math.max(max, category.product_count || 0);
+    }, 0);
+    document.getElementById('statCategoryTotal').textContent = categories.length;
+    document.getElementById('statAssignedProducts').textContent = assignedProducts;
+    document.getElementById('statEmptyCategories').textContent = categories.filter(function(category) { return !category.product_count; }).length;
+    document.getElementById('statLargestCategory').textContent = largest;
+}
+
+function renderCategories() {
+    var search = document.getElementById('categorySearch').value.trim().toLowerCase();
+    var categories = allCategories.filter(function(category) {
+        var haystack = [category.name, category.slug, category.description].join(' ').toLowerCase();
+        return !search || haystack.indexOf(search) !== -1;
+    });
+
+    var tbody = document.getElementById('categoriesBody');
+    if (!categories.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-muted text-center small py-4">No categories match the current search.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = categories.map(function(category) {
+        var productCount = category.product_count || 0;
+        var deleteDisabled = productCount ? ' disabled title="Move products out of this category before deleting."' : '';
+        return '<tr>' +
+            '<td><div class="fw-semibold">' + escapeAdminHtml(category.name) + '</div><div class="text-muted small">ID #' + category.id + '</div></td>' +
+            '<td><code class="small">' + escapeAdminHtml(category.slug) + '</code></td>' +
+            '<td class="small text-muted">' + escapeAdminHtml(category.description || 'No description') + '</td>' +
+            '<td><span class="badge bg-primary bg-opacity-10 text-primary small">' + productCount + (productCount === 1 ? ' product' : ' products') + '</span></td>' +
+            '<td class="text-end">' +
+            '<div class="btn-group btn-group-sm">' +
+            '<button type="button" class="btn btn-outline-primary" onclick="openCategoryModal(' + category.id + ')"><i class="bi bi-pencil me-1"></i>Edit</button>' +
+            '<button type="button" class="btn btn-outline-danger" onclick="deleteCategory(' + category.id + ')"' + deleteDisabled + '><i class="bi bi-trash me-1"></i>Delete</button>' +
+            '</div>' +
+            '</td>' +
+            '</tr>';
+    }).join('');
+}
+
+function loadCategories() {
+    fetch('/api/admin/categories')
+        .then(function(r) {
+            if (!r.ok) throw new Error('Unable to load categories');
+            return r.json();
+        })
+        .then(function(categories) {
+            allCategories = categories;
+            updateCategoryStats(categories);
+            renderCategories();
+        })
+        .catch(function(err) {
+            document.getElementById('categoriesBody').innerHTML = '<tr><td colspan="5" class="text-danger text-center small py-4">' + escapeAdminHtml(err.message) + '</td></tr>';
+        });
+}
+
+function openCategoryModal(categoryId) {
+    var category = categoryId ? allCategories.find(function(item) { return item.id === categoryId; }) : null;
+    document.getElementById('categoryForm').classList.remove('was-validated');
+    document.getElementById('categoryId').value = category ? category.id : '';
+    document.getElementById('categoryName').value = category ? category.name : '';
+    document.getElementById('categorySlug').value = category ? category.slug : '';
+    document.getElementById('categoryDescription').value = category ? (category.description || '') : '';
+    document.getElementById('categoryModalTitle').textContent = category ? 'Edit Category' : 'New Category';
+    categoryModal.show();
+}
+
+function saveCategory(event) {
+    event.preventDefault();
+    var form = document.getElementById('categoryForm');
+    if (!form.checkValidity()) {
+        form.classList.add('was-validated');
+        return;
+    }
+
+    var id = document.getElementById('categoryId').value;
+    var payload = {
+        name: document.getElementById('categoryName').value.trim(),
+        slug: slugifyCategory(document.getElementById('categorySlug').value),
+        description: document.getElementById('categoryDescription').value.trim()
+    };
+    var btn = document.getElementById('saveCategoryBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+    fetch(id ? '/api/admin/categories/' + id : '/api/admin/categories', {
+        method: id ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(function(r) {
+        if (!r.ok) return r.json().then(function(err) { throw new Error(err.detail || 'Unable to save category'); });
+        return r.json();
+    })
+    .then(function() {
+        categoryModal.hide();
+        loadCategories();
+    })
+    .catch(function(err) {
+        alert(err.message);
+    })
+    .finally(function() {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Save Category';
+    });
+}
+
+function deleteCategory(categoryId) {
+    var category = allCategories.find(function(item) { return item.id === categoryId; });
+    if (!category) return;
+    if (!confirm('Delete category "' + category.name + '"? This cannot be undone.')) return;
+
+    fetch('/api/admin/categories/' + categoryId, { method: 'DELETE' })
+        .then(function(r) {
+            if (!r.ok) return r.json().then(function(err) { throw new Error(err.detail || 'Unable to delete category'); });
+            loadCategories();
+        })
+        .catch(function(err) {
+            alert(err.message);
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    categoryModal = new bootstrap.Modal(document.getElementById('categoryModal'));
+    document.getElementById('newCategoryBtn').addEventListener('click', function() { openCategoryModal(); });
+    document.getElementById('refreshCategoriesBtn').addEventListener('click', loadCategories);
+    document.getElementById('categorySearch').addEventListener('input', renderCategories);
+    document.getElementById('categoryForm').addEventListener('submit', saveCategory);
+    document.getElementById('categoryName').addEventListener('input', function() {
+        var slugInput = document.getElementById('categorySlug');
+        if (!document.getElementById('categoryId').value && !slugInput.value.trim()) {
+            slugInput.value = slugifyCategory(this.value);
+        }
+    });
+    document.getElementById('categorySlug').addEventListener('blur', function() {
+        this.value = slugifyCategory(this.value);
+    });
+    loadCategories();
+});
+</script>
+{% endblock %}

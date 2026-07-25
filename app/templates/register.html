@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Register - TheFinanceCompany{% endblock %}
+{% block content %}
+
+<section class="auth-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-5">
+                <div class="auth-panel">
+                    <div class="text-center mb-4">
+                        <div class="auth-icon mx-auto mb-3"><i class="bi bi-person-plus"></i></div>
+                        <span class="category-pill small mb-2 px-3 py-2">Customer Account</span>
+                        <h1 class="h3 fw-bold mb-2">Create your account</h1>
+                        <p class="text-muted mb-0">Register now so demo orders can be tied to your customer dashboard.</p>
+                    </div>
+
+                    <form id="customerRegisterForm" novalidate>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold" for="registerName">Full Name</label>
+                            <input type="text" class="form-control form-control-lg" id="registerName" autocomplete="name" required>
+                            <div class="invalid-feedback">Please enter your name.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold" for="registerEmail">Email</label>
+                            <input type="email" class="form-control form-control-lg" id="registerEmail" autocomplete="email" required>
+                            <div class="invalid-feedback">Please enter a valid email.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold" for="registerPassword">Password</label>
+                            <input type="password" class="form-control form-control-lg" id="registerPassword" autocomplete="new-password" minlength="6" required>
+                            <div class="invalid-feedback">Use at least 6 characters.</div>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-lg w-100 py-2 fw-semibold" id="registerSubmitBtn">
+                            <i class="bi bi-envelope-check me-2"></i>Send Verification Code
+                        </button>
+                    </form>
+
+                    <form id="registrationOtpForm" class="d-none" novalidate>
+                        <div class="text-center mb-4">
+                            <div class="auth-icon mx-auto mb-3"><i class="bi bi-shield-check"></i></div>
+                            <h2 class="h4 fw-bold mb-2">Check your email</h2>
+                            <p class="text-muted mb-2">Enter the 6-digit code sent to <strong id="registrationOtpEmail"></strong>.</p>
+                            <p class="small text-muted mb-0">If you do not see it, check Spam, Promotions, or Updates before requesting another code.</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold" for="registrationOtpCode">Verification Code</label>
+                            <input type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" class="form-control form-control-lg text-center otp-input" id="registrationOtpCode" autocomplete="one-time-code" required>
+                            <div class="invalid-feedback">Enter the 6-digit code from your email.</div>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-lg w-100 py-2 fw-semibold" id="registrationOtpSubmitBtn">
+                            <i class="bi bi-check2-circle me-2"></i>Verify Account
+                        </button>
+                        <button type="button" class="btn btn-link w-100 mt-2" id="registrationResendBtn">Resend code</button>
+                    </form>
+
+                    <p class="text-center text-muted small mt-4 mb-0">
+                        Already registered? <a href="/login" class="fw-semibold">Log in</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/customer-auth.js?v=20260724-otp-auth-spam-guidance"></script>
+{% endblock %}

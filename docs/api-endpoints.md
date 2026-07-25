@@ -236,7 +236,7 @@ Submit a custom development project request.
 }
 ```
 
-## Admin API (future sprint)
+## Admin API
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -249,11 +249,22 @@ Submit a custom development project request.
 | GET | `/api/admin/inquiries` | List contact inquiries |
 | PUT | `/api/admin/inquiries/{id}/status` | Update inquiry status |
 
-## Authentication API (future sprint)
+## Authentication API
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/register` | Create/update a pending customer registration and send OTP |
+| POST | `/api/auth/register/verify` | Verify registration OTP and activate account |
+| POST | `/api/auth/otp/resend` | Resend registration or password reset OTP |
 | POST | `/api/auth/login` | Login |
 | POST | `/api/auth/logout` | Logout |
+| GET | `/api/auth/me` | Get current authenticated user |
+| POST | `/api/auth/forgot-password` | Send password reset OTP if account exists |
+| POST | `/api/auth/reset-password` | Verify reset OTP and set a new password |
+| GET | `/api/account/profile` | Get customer profile |
+| PUT | `/api/account/profile` | Update customer profile |
 | GET | `/api/account/orders` | Get user's order history |
+| GET | `/api/account/projects` | Get user's custom project requests |
+| GET | `/api/account/support` | Get user's support inquiries |
+
+Registration now creates customer users with `pending_verification` status. Login is blocked until `/api/auth/register/verify` successfully verifies the emailed OTP. OTPs are stored hashed, expire after the configured window, and are consumed after successful verification.

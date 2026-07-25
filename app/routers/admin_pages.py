@@ -22,6 +22,16 @@ def admin_products(request: Request, current_user: User = Depends(get_current_us
     return templates.TemplateResponse("admin/products.html", {"request": request, "user": current_user})
 
 
+@router.get("/admin/categories", dependencies=[Depends(require_admin)])
+def admin_categories(request: Request, current_user: User = Depends(get_current_user)):
+    return templates.TemplateResponse("admin/categories.html", {"request": request, "user": current_user})
+
+
+@router.get("/admin/customers", dependencies=[Depends(require_admin)])
+def admin_customers(request: Request, current_user: User = Depends(get_current_user)):
+    return templates.TemplateResponse("admin/customers.html", {"request": request, "user": current_user})
+
+
 @router.get("/admin/products/new", dependencies=[Depends(require_admin)])
 def admin_product_new(request: Request, current_user: User = Depends(get_current_user)):
     return templates.TemplateResponse("admin/product_form.html", {"request": request, "user": current_user, "product": None})

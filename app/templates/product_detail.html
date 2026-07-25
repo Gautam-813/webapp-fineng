@@ -2,7 +2,7 @@
 {% block title %}{{ product.name }} - TheFinanceCompany{% endblock %}
 {% block content %}
 
-<section class="py-5">
+<section class="product-detail-hero py-5">
     <div class="container">
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb">
@@ -12,75 +12,183 @@
             </ol>
         </nav>
 
-        <div class="row g-5">
+        <div class="row g-5 align-items-start">
             <div class="col-lg-6">
-                <div class="card border-0 shadow-sm product-gallery-main">
-                    <div class="card-body p-4 text-center bg-light">
+                <div class="product-media-panel">
+                    <div class="product-gallery-main">
                         {% set main_image = product.thumbnail_url or (product.images[0].image_url if product.images else none) %}
                         {% if main_image %}
-                            <img src="{{ main_image }}" id="mainProductImage" class="img-fluid rounded" alt="{{ product.name }}">
+                            <img src="{{ main_image }}" id="mainProductImage" class="img-fluid" alt="{{ product.name }}">
                         {% else %}
                             <div class="product-detail-placeholder d-flex align-items-center justify-content-center">
                                 <i class="bi bi-box"></i>
                             </div>
                         {% endif %}
                     </div>
+                    {% if product.thumbnail_url or product.images %}
+                        <div class="product-gallery-thumbs mt-3">
+                            {% if product.thumbnail_url %}
+                                <button type="button" class="product-gallery-thumb active" data-image-src="{{ product.thumbnail_url }}" data-image-alt="{{ product.name }}">
+                                    <img src="{{ product.thumbnail_url }}" alt="{{ product.name }}">
+                                    <span>Main</span>
+                                </button>
+                            {% endif %}
+                            {% for img in product.images %}
+                                <button type="button" class="product-gallery-thumb {% if not product.thumbnail_url and loop.first %}active{% endif %}" data-image-src="{{ img.image_url }}" data-image-alt="{{ img.alt_text or product.name }}">
+                                    <img src="{{ img.image_url }}" alt="{{ img.alt_text or product.name }}">
+                                    <span>{{ img.alt_text or 'Detail' }}</span>
+                                </button>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
-
-                {% if product.thumbnail_url or product.images %}
-                    <div class="product-gallery-thumbs mt-3">
-                        {% if product.thumbnail_url %}
-                            <button type="button" class="product-gallery-thumb active" data-image-src="{{ product.thumbnail_url }}" data-image-alt="{{ product.name }}">
-                                <img src="{{ product.thumbnail_url }}" alt="{{ product.name }}">
-                                <span>Main</span>
-                            </button>
-                        {% endif %}
-                        {% for img in product.images %}
-                            <button type="button" class="product-gallery-thumb {% if not product.thumbnail_url and loop.first %}active{% endif %}" data-image-src="{{ img.image_url }}" data-image-alt="{{ img.alt_text or product.name }}">
-                                <img src="{{ img.image_url }}" alt="{{ img.alt_text or product.name }}">
-                                <span>{{ img.alt_text or 'Detail' }}</span>
-                            </button>
-                        {% endfor %}
-                    </div>
-                {% endif %}
             </div>
 
             <div class="col-lg-6">
-                {% if product.category %}
-                    <span class="category-pill small mb-2 px-2 py-1">{{ product.category.name }}</span>
-                {% endif %}
-                <h1 class="fw-bold mb-2">{{ product.name }}</h1>
-                {% if product.version %}
-                    <span class="badge bg-primary bg-opacity-10 text-primary mb-3">v{{ product.version }}</span>
-                {% endif %}
+                <div class="product-purchase-panel">
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        {% if product.category %}
+                            <span class="category-pill small px-2 py-1">{{ product.category.name }}</span>
+                        {% endif %}
+                        {% if product.featured %}
+                            <span class="platform-badge text-warning"><i class="bi bi-star-fill me-1"></i>Featured</span>
+                        {% endif %}
+                        <span class="platform-badge text-success"><i class="bi bi-check-circle me-1"></i>Available</span>
+                    </div>
 
-                <div class="d-flex align-items-center gap-3 my-3">
-                    <span class="fs-2 fw-bold text-primary">${{ product.price }}</span>
-                    {% if product.platform %}
-                        <span class="text-muted"><i class="bi bi-cpu me-1"></i>{{ product.platform }}</span>
+                    <h1 class="fw-bold mb-3">{{ product.name }}</h1>
+                    {% if product.short_description %}
+                        <p class="lead text-muted mb-4">{{ product.short_description }}</p>
+                    {% endif %}
+
+                    <div class="product-price-row mb-4">
+                        <span class="fs-2 fw-bold text-primary">${{ product.price }}</span>
+                        <span class="text-muted small">Demo checkout creates an order confirmation. Payment integration comes later.</span>
+                    </div>
+
+                    <div class="product-fact-grid mb-4">
+                        <div class="product-fact">
+                            <span>Type</span>
+                            <strong>{{ product.category.name if product.category else 'Trading software' }}</strong>
+                        </div>
+                        <div class="product-fact">
+                            <span>Platform</span>
+                            <strong>{{ product.platform or 'MT4 / MT5 details' }}</strong>
+                        </div>
+                        <div class="product-fact">
+                            <span>Version</span>
+                            <strong>{{ product.version or 'Current build' }}</strong>
+                        </div>
+                        <div class="product-fact">
+                            <span>Delivery</span>
+                            <strong>Order confirmation</strong>
+                        </div>
+                    </div>
+
+                    <div class="product-cta-stack mb-4">
+                        <button class="btn btn-primary btn-lg fw-semibold add-to-cart" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price }}" onclick="addToCart(this.dataset)">
+                            <i class="bi bi-cart-plus me-2"></i>Add to Cart - ${{ product.price }}
+                        </button>
+                        <a href="/contact?type=custom" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-tools me-2"></i>Request Custom Version
+                        </a>
+                    </div>
+
+                    <div class="product-trust-row">
+                        <span><i class="bi bi-shield-check text-success"></i> Server-validated cart</span>
+                        <span><i class="bi bi-headset text-primary"></i> Support available</span>
+                        <span><i class="bi bi-cpu text-success"></i> MT4/MT5 workflows</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="product-info-panel mb-4">
+                    <div class="product-section-heading">
+                        <i class="bi bi-file-text"></i>
+                        <div>
+                            <span class="text-muted small fw-semibold">Overview</span>
+                            <h2 class="h4 fw-bold mb-0">Product Details</h2>
+                        </div>
+                    </div>
+                    {% if product.description %}
+                        <div class="product-description">
+                            {{ product.description | replace('\n', '<br>') | safe }}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">Detailed documentation for this software will be added by the team. You can still review the catalog information and request clarification before ordering.</p>
                     {% endif %}
                 </div>
 
-                {% if product.description %}
-                    <div class="mb-4">
-                        <h6 class="fw-bold">Description</h6>
-                        <p class="text-muted">{{ product.description | replace('\n', '<br>') | safe }}</p>
+                <div class="product-info-panel">
+                    <div class="product-section-heading">
+                        <i class="bi bi-list-check"></i>
+                        <div>
+                            <span class="text-muted small fw-semibold">Before You Deploy</span>
+                            <h2 class="h4 fw-bold mb-0">Setup Notes</h2>
+                        </div>
                     </div>
-                {% endif %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="product-note">
+                                <i class="bi bi-sliders"></i>
+                                <strong>Configure inputs carefully</strong>
+                                <span>Review lot sizing, risk limits, symbols, sessions, and broker-specific settings before live use.</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="product-note">
+                                <i class="bi bi-graph-up"></i>
+                                <strong>Backtest and forward test</strong>
+                                <span>Run tests on the target symbol, spread, and timeframe so expectations match your trading environment.</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="product-note">
+                                <i class="bi bi-server"></i>
+                                <strong>Use stable infrastructure</strong>
+                                <span>Automation should run on a reliable terminal, VPS, and broker connection where possible.</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="product-note">
+                                <i class="bi bi-life-preserver"></i>
+                                <strong>Ask before modifying</strong>
+                                <span>For custom logic, parameters, or broker-specific behavior, request a custom version from the team.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                <div class="d-grid gap-2 d-md-flex mb-4">
-                    <button class="btn btn-primary btn-lg px-5 fw-semibold add-to-cart" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price }}" onclick="addToCart(this.dataset)">
-                        <i class="bi bi-cart-plus me-2"></i>Add to Cart - ${{ product.price }}
-                    </button>
+            <div class="col-lg-4">
+                <div class="product-info-panel mb-4">
+                    <div class="product-section-heading compact">
+                        <i class="bi bi-question-circle"></i>
+                        <div>
+                            <span class="text-muted small fw-semibold">Need Help?</span>
+                            <h2 class="h5 fw-bold mb-0">Support Path</h2>
+                        </div>
+                    </div>
+                    <div class="product-support-list">
+                        <span><i class="bi bi-envelope"></i> Contact us for setup questions.</span>
+                        <span><i class="bi bi-code-square"></i> Request custom EA, copier, or indicator logic.</span>
+                        <span><i class="bi bi-receipt"></i> Demo checkout records your order request.</span>
+                    </div>
+                    <a href="/contact" class="btn btn-outline-primary w-100 mt-3">
+                        <i class="bi bi-chat-dots me-2"></i>Contact Support
+                    </a>
                 </div>
 
-                <div class="d-flex gap-4 small text-muted mb-4 flex-wrap">
-                    <span><i class="bi bi-shield-check me-1 text-success"></i>Demo Checkout</span>
-                    <span><i class="bi bi-download me-1 text-primary"></i>Digital Delivery Ready</span>
-                    <span><i class="bi bi-headset me-1 text-info"></i>Support Included</span>
+                <div class="risk-panel p-4">
+                    {% include 'partials/disclaimer.html' %}
                 </div>
-
-                {% include 'partials/disclaimer.html' %}
             </div>
         </div>
     </div>
@@ -89,7 +197,13 @@
 {% if related_products %}
 <section class="py-5 bg-light">
     <div class="container">
-        <h3 class="fw-bold mb-4">Related Products</h3>
+        <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+            <div>
+                <span class="category-pill small mb-2 px-3 py-2">Related</span>
+                <h3 class="fw-bold mb-0">Similar Products</h3>
+            </div>
+            <a href="/products" class="btn btn-outline-primary btn-sm">View Catalog</a>
+        </div>
         <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
             {% for product in related_products %}
                 {% include 'partials/product_card.html' %}

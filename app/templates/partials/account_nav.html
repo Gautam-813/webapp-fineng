@@ -1,0 +1,22 @@
+<div class="account-shell-nav">
+    <a href="/account" class="{% if account_active == 'dashboard' %}active{% endif %}">
+        <i class="bi bi-grid-1x2"></i>
+        <span>Overview</span>
+    </a>
+    <a href="/account/orders" class="{% if account_active == 'orders' %}active{% endif %}">
+        <i class="bi bi-receipt"></i>
+        <span>Orders</span>
+    </a>
+    <a href="/account/projects" class="{% if account_active == 'projects' %}active{% endif %}">
+        <i class="bi bi-tools"></i>
+        <span>Projects</span>
+    </a>
+    <a href="/account/support" class="{% if account_active == 'support' %}active{% endif %}">
+        <i class="bi bi-life-preserver"></i>
+        <span>Support</span>
+    </a>
+    <a href="/account/profile" class="{% if account_active == 'profile' %}active{% endif %}">
+        <i class="bi bi-person-gear"></i>
+        <span>Profile</span>
+    </a>
+</div>

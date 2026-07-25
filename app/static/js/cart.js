@@ -83,11 +83,17 @@ function removeFromCart(productId) {
         .then(function(cart) {
             var item = cart.find(function(i) { return i.product_id === productId; });
             if (!item) return;
-            return fetch(cartApiUrl('/items/' + item.item_id), { method: 'DELETE' });
+            return fetch(cartApiUrl('/items/' + item.item_id), { method: 'DELETE' })
+                .then(function(r) {
+                    if (!r.ok && r.status !== 204) throw new Error('Unable to remove item');
+                });
         })
         .then(function() {
             updateCartBadge();
             renderCartPage();
+        })
+        .catch(function(err) {
+            showAlert('Error: ' + err.message, 'danger');
         });
 }
 
@@ -160,7 +166,7 @@ function renderCartPage() {
                 '<div class="cart-line-total fw-bold">$' + total.toFixed(2) + '</div>' +
                 '<button class="btn btn-sm btn-outline-danger cart-remove-btn" onclick="removeFromCart(' + item.product_id + ')" title="Remove">' +
                 '<i class="bi bi-trash"></i>' +
-                '</div>' +
+                '</button>' +
                 '</div>';
         });
 
@@ -183,11 +189,16 @@ function updateCartQty(productId, delta) {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ quantity: quantity })
+            }).then(function(r) {
+                if (!r.ok) throw new Error('Unable to update quantity');
             });
         })
         .then(function() {
             updateCartBadge();
             renderCartPage();
+        })
+        .catch(function(err) {
+            showAlert('Error: ' + err.message, 'danger');
         });
 }
 

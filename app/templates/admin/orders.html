@@ -46,15 +46,23 @@
             <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
             <input type="search" class="form-control" id="orderSearch" placeholder="Search order, customer, email, or product">
         </div>
-        <select class="form-select admin-status-filter" id="statusFilter">
-            <option value="">All statuses</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="pending">Pending</option>
-            <option value="paid">Paid</option>
-            <option value="failed">Failed</option>
-            <option value="refunded">Refunded</option>
-            <option value="cancelled">Cancelled</option>
-        </select>
+        <div class="d-flex gap-2 flex-wrap">
+            <select class="form-select admin-status-filter" id="statusFilter">
+                <option value="">All statuses</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="pending">Pending</option>
+                <option value="paid">Paid</option>
+                <option value="failed">Failed</option>
+                <option value="refunded">Refunded</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+            <select class="form-select admin-status-filter" id="pageSizeSelect">
+                <option value="10">10 / page</option>
+                <option value="20" selected>20 / page</option>
+                <option value="50">50 / page</option>
+                <option value="100">100 / page</option>
+            </select>
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -74,6 +82,18 @@
                 <tr><td colspan="7" class="text-muted text-center small py-4">Loading...</td></tr>
             </tbody>
         </table>
+    </div>
+    <div class="admin-pagination pt-3 mt-3 border-top">
+        <div class="text-muted small" id="orderPageSummary">Showing 0 orders</div>
+        <div class="btn-group btn-group-sm" role="group" aria-label="Order pagination">
+            <button type="button" class="btn btn-outline-secondary" id="prevPageBtn">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary disabled" id="currentPageBtn">Page 1 of 1</button>
+            <button type="button" class="btn btn-outline-secondary" id="nextPageBtn">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
     </div>
 </div>
 
@@ -152,6 +172,13 @@
 <script>
 var allOrders = [];
 var selectedOrderId = null;
+var orderPage = {
+    page: 1,
+    pageSize: 20,
+    total: 0,
+    pages: 1
+};
+var searchTimer = null;
 
 function escapeAdminHtml(value) {
     return String(value || '').replace(/[&<>"']/g, function(ch) {
@@ -178,29 +205,32 @@ function statusBadge(status) {
     return '<span class="badge bg-' + badgeClass + ' bg-opacity-10 text-' + badgeClass + ' small">' + escapeAdminHtml(status || 'pending') + '</span>';
 }
 
-function updateStats(orders) {
-    var paidRevenue = orders
-        .filter(function(o) { return o.status === 'paid'; })
-        .reduce(function(sum, o) { return sum + parseFloat(o.total_amount || 0); }, 0);
-    document.getElementById('statOrderTotal').textContent = orders.length;
-    document.getElementById('statConfirmed').textContent = orders.filter(function(o) { return o.status === 'confirmed'; }).length;
-    document.getElementById('statPending').textContent = orders.filter(function(o) { return o.status === 'pending'; }).length;
-    document.getElementById('statPaidRevenue').textContent = formatMoney(paidRevenue);
+function updateStats(stats) {
+    document.getElementById('statOrderTotal').textContent = stats.total_orders || 0;
+    document.getElementById('statConfirmed').textContent = stats.confirmed_orders || 0;
+    document.getElementById('statPending').textContent = stats.pending_orders || 0;
+    document.getElementById('statPaidRevenue').textContent = formatMoney(stats.paid_revenue);
+}
+
+function currentOrderParams(page) {
+    var status = document.getElementById('statusFilter').value;
+    var search = document.getElementById('orderSearch').value.trim();
+    var pageSize = parseInt(document.getElementById('pageSizeSelect').value, 10) || 20;
+    var params = new URLSearchParams({
+        page: page || orderPage.page,
+        page_size: pageSize
+    });
+    if (status) params.set('status', status);
+    if (search) params.set('search', search);
+    return params;
 }
 
 function renderOrders() {
-    var status = document.getElementById('statusFilter').value;
-    var search = document.getElementById('orderSearch').value.trim().toLowerCase();
-    var orders = allOrders.filter(function(o) {
-        var matchesStatus = !status || o.status === status;
-        var itemText = (o.items || []).map(function(i) { return i.product_name; }).join(' ');
-        var haystack = ['#' + o.id, o.customer_name, o.customer_email, itemText].join(' ').toLowerCase();
-        return matchesStatus && (!search || haystack.indexOf(search) !== -1);
-    });
-
+    var orders = allOrders;
     var tbody = document.getElementById('ordersBody');
     if (!orders.length) {
         tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center small py-4">No orders match the current filters.</td></tr>';
+        updatePagination();
         return;
     }
 
@@ -220,15 +250,40 @@ function renderOrders() {
             '<button type="button" class="btn btn-sm btn-outline-primary" onclick="openOrderModal(' + o.id + ')"><i class="bi bi-eye me-1"></i>View</button>' +
             '</td></tr>';
     }).join('');
+    updatePagination();
 }
 
-function loadOrders() {
-    fetch('/api/admin/orders')
-        .then(function(r) { return r.json(); })
-        .then(function(orders) {
-            allOrders = orders;
-            updateStats(orders);
+function updatePagination() {
+    var start = orderPage.total ? ((orderPage.page - 1) * orderPage.pageSize) + 1 : 0;
+    var end = Math.min(orderPage.page * orderPage.pageSize, orderPage.total);
+    document.getElementById('orderPageSummary').textContent = 'Showing ' + start + '-' + end + ' of ' + orderPage.total + ' orders';
+    document.getElementById('currentPageBtn').textContent = 'Page ' + orderPage.page + ' of ' + orderPage.pages;
+    document.getElementById('prevPageBtn').disabled = orderPage.page <= 1;
+    document.getElementById('nextPageBtn').disabled = orderPage.page >= orderPage.pages;
+}
+
+function loadOrders(page) {
+    var params = currentOrderParams(page || orderPage.page);
+    document.getElementById('ordersBody').innerHTML = '<tr><td colspan="7" class="text-muted text-center small py-4">Loading orders...</td></tr>';
+    return fetch('/api/admin/orders?' + params.toString())
+        .then(function(r) {
+            if (!r.ok) throw new Error('Unable to load orders');
+            return r.json();
+        })
+        .then(function(data) {
+            allOrders = data.items || [];
+            orderPage.page = data.page || 1;
+            orderPage.pageSize = data.page_size || parseInt(document.getElementById('pageSizeSelect').value, 10) || 20;
+            orderPage.total = data.total || 0;
+            orderPage.pages = data.pages || 1;
+            updateStats(data.stats || {});
             renderOrders();
+        })
+        .catch(function(err) {
+            document.getElementById('ordersBody').innerHTML = '<tr><td colspan="7" class="text-danger text-center small py-4">' + escapeAdminHtml(err.message) + '</td></tr>';
+            orderPage.total = 0;
+            orderPage.pages = 1;
+            updatePagination();
         });
 }
 
@@ -267,7 +322,7 @@ function updateOrderStatus(orderId, status) {
         if (!r.ok) return r.json().then(function(err) { throw new Error(err.detail || 'Status update failed'); });
         return r.json();
     }).then(function() {
-        return loadOrders();
+        return loadOrders(orderPage.page);
     });
 }
 
@@ -288,10 +343,22 @@ document.getElementById('modalSaveStatusBtn').addEventListener('click', function
         });
 });
 
-document.getElementById('orderSearch').addEventListener('input', renderOrders);
-document.getElementById('statusFilter').addEventListener('change', renderOrders);
-document.getElementById('refreshOrdersBtn').addEventListener('click', loadOrders);
+document.getElementById('orderSearch').addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function() {
+        loadOrders(1);
+    }, 250);
+});
+document.getElementById('statusFilter').addEventListener('change', function() { loadOrders(1); });
+document.getElementById('pageSizeSelect').addEventListener('change', function() { loadOrders(1); });
+document.getElementById('prevPageBtn').addEventListener('click', function() {
+    if (orderPage.page > 1) loadOrders(orderPage.page - 1);
+});
+document.getElementById('nextPageBtn').addEventListener('click', function() {
+    if (orderPage.page < orderPage.pages) loadOrders(orderPage.page + 1);
+});
+document.getElementById('refreshOrdersBtn').addEventListener('click', function() { loadOrders(orderPage.page); });
 
-loadOrders();
+loadOrders(1);
 </script>
 {% endblock %}

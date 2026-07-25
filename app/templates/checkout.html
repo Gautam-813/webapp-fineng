@@ -42,6 +42,10 @@
                                 <div class="invalid-feedback">Please enter a valid email.</div>
                             </div>
                         </div>
+                        <p class="small text-success mt-3 mb-0 d-none" id="checkoutAuthNote"></p>
+                        <p class="small text-muted mt-3 mb-0" id="checkoutGuestNote">
+                            Have an account? <a href="/login?next=/checkout" class="fw-semibold text-decoration-none">Sign in before checkout</a> to attach this order to your account.
+                        </p>
 
                         <div id="checkoutSummary" class="checkout-inline-summary d-none mt-4">
                             <h6 class="fw-bold mb-3">Review Total</h6>
@@ -66,12 +70,14 @@
             </div>
             <div class="col-lg-5">
                 <div class="cart-summary-panel">
-                    <h5 class="fw-bold mb-3">Items in Your Cart</h5>
+                    <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+                        <h5 class="fw-bold mb-0">Items in Your Cart</h5>
+                        <a href="/cart" class="btn btn-sm btn-outline-primary">Edit Cart</a>
+                    </div>
                     <div id="checkoutCartItems">
                         <p class="text-muted small">Loading...</p>
                     </div>
                 </div>
-                {% include 'partials/disclaimer.html' %}
             </div>
         </div>
     </div>
@@ -79,5 +85,5 @@
 
 {% endblock %}
 {% block scripts %}
-<script src="/static/js/checkout.js"></script>
+<script src="/static/js/checkout.js?v=20260718-flow-polish"></script>
 {% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Refund Policy - TheFinanceCompany{% endblock %}
+{% block content %}
+
+<section class="legal-hero py-5">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item active">Refund Policy</li>
+            </ol>
+        </nav>
+        <div class="row g-4 align-items-end">
+            <div class="col-lg-8">
+                <span class="category-pill small mb-3 px-3 py-2">Orders and Support</span>
+                <h1 class="display-6 fw-bold mb-3">Refund Policy</h1>
+                <p class="lead text-muted mb-0">This draft explains the intended refund and support approach for digital trading software and custom development work.</p>
+            </div>
+            <div class="col-lg-4">
+                <div class="legal-summary-box">
+                    <span>Last updated</span>
+                    <strong>July 18, 2026</strong>
+                    <p>This draft should be reviewed by qualified legal counsel before production launch.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="legal-layout">
+            <aside class="legal-sidebar">
+                <a href="/risk-disclaimer">Risk Disclaimer</a>
+                <a href="/terms">Terms</a>
+                <a href="/privacy-policy">Privacy Policy</a>
+                <a href="/refund-policy" class="active">Refund Policy</a>
+            </aside>
+
+            <article class="legal-content">
+                <div class="legal-callout">
+                    <i class="bi bi-receipt"></i>
+                    <div>
+                        <strong>Demo checkout is active right now.</strong>
+                        <p>The current website creates confirmed demo orders without collecting payment. This policy should be finalized before real payment collection is enabled.</p>
+                    </div>
+                </div>
+
+                <section class="legal-section">
+                    <h2>1. Digital product nature</h2>
+                    <p>Trading software, Expert Advisors, indicators, scripts, trade copiers, downloads, license keys, source files, compiled files, and configuration materials are digital products. Once delivered or accessed, they may not be returnable in the same way as physical goods.</p>
+                </section>
+
+                <section class="legal-section">
+                    <h2>2. Before purchase</h2>
+                    <p>Please review product descriptions, platform compatibility, setup notes, screenshots, risk information, and requirements before purchasing. If you are unsure whether a product fits your needs, contact us before placing an order.</p>
+                </section>
+
+                <section class="legal-section">
+                    <h2>3. Refund eligibility</h2>
+                    <p>When production payments are enabled, refund eligibility may depend on whether the product was delivered, whether a license was generated, whether the issue is reproducible, whether support was given a reasonable opportunity to resolve the issue, and whether local consumer protection rules apply.</p>
+                    <p>Refunds are not intended to cover trading losses, strategy performance disappointment, market changes, incorrect settings, broker restrictions, or incompatibility caused by unsupported platforms.</p>
+                </section>
+
+                <section class="legal-section">
+                    <h2>4. Technical support first</h2>
+                    <p>If software does not install, activate, or behave as described, contact support with your order reference, platform version, screenshots, logs if available, and a clear description of the issue. We may provide troubleshooting, corrected files, setup guidance, or a reasonable fix before considering refund options.</p>
+                </section>
+
+                <section class="legal-section">
+                    <h2>5. Custom development work</h2>
+                    <p>Custom development fees, deposits, milestone payments, refunds, revisions, and cancellations should be defined in the project agreement before work begins. Approved milestones or delivered custom work may be non-refundable unless otherwise agreed in writing.</p>
+                </section>
+
+                <section class="legal-section">
+                    <h2>6. Chargebacks and disputes</h2>
+                    <p>Please contact us first so we can review and resolve the issue. If payment disputes or chargebacks occur, access to products, support, license services, or custom work may be paused while the matter is reviewed.</p>
+                </section>
+
+                <section class="legal-section">
+                    <h2>7. How to request help</h2>
+                    <p>Use the contact page and include your order reference, product name, account email, platform, and a detailed explanation of the issue. We will review the request and respond with the next step.</p>
+                </section>
+            </article>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

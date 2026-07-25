@@ -1,83 +1,231 @@
 {% extends 'base.html' %}
-{% block title %}About Us — TheFinanceCompany{% endblock %}
+{% block title %}About TheFinanceCompany{% endblock %}
 {% block content %}
 
-<section class="py-5">
-    <div class="container">
+<section class="about-hero dark-section py-5">
+    <div class="container py-lg-4">
         <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb">
+            <ol class="breadcrumb breadcrumb-dark mb-0">
                 <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
                 <li class="breadcrumb-item active">About</li>
             </ol>
         </nav>
 
-        <div class="row g-5">
-            <div class="col-lg-8">
-                <h1 class="fw-bold mb-4">About TheFinanceCompany</h1>
-                <p class="lead text-muted">We build professional financial software for traders who demand reliability, performance, and transparency.</p>
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-7">
+                <span class="section-eyebrow small mb-3 px-3 py-2">
+                    <i class="bi bi-shield-check"></i> Trading software built with discipline
+                </span>
+                <h1 class="display-5 fw-bold mb-3">We build practical algo-trading software for serious traders and teams.</h1>
+                <p class="lead hero-subtitle mb-4">TheFinanceCompany focuses on Expert Advisors, trade copiers, indicators, dashboards, and custom MT4/MT5 automation that can be configured, tested, supported, and maintained.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="/products" class="btn btn-success btn-lg px-4">
+                        <i class="bi bi-grid-3x3-gap me-2"></i>View Products
+                    </a>
+                    <a href="/contact" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-code-slash me-2"></i>Request Custom Software
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="about-system-panel">
+                    <div class="about-system-header">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <strong>EA Build Review</strong>
+                    </div>
+                    <div class="about-signal-row">
+                        <span>Platform</span>
+                        <strong>MT4 / MT5</strong>
+                    </div>
+                    <div class="about-signal-row">
+                        <span>Core Logic</span>
+                        <strong>Rules, filters, risk controls</strong>
+                    </div>
+                    <div class="about-signal-row">
+                        <span>Validation</span>
+                        <strong>Backtest, demo test, revision</strong>
+                    </div>
+                    <div class="about-code-block">
+                        <span>if signal and risk_ok:</span>
+                        <span>&nbsp;&nbsp;execute_trade()</span>
+                        <span>&nbsp;&nbsp;track_exposure()</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-                <h5 class="fw-bold mt-4">Our Mission</h5>
-                <p>To bridge the gap between complex trading strategies and practical, deployable software. We believe that great trading tools should be accessible, well-documented, and backed by real support.</p>
-
-                <h5 class="fw-bold mt-4">What We Do</h5>
-                <p>We specialize in developing Expert Advisors (EAs) for MetaTrader 4 and MetaTrader 5 platforms. Our products are built by experienced developers who understand both the technical and financial sides of algorithmic trading.</p>
-                <p>Beyond our catalog of pre-built EAs, we offer custom software development services for traders and financial firms with unique requirements. Whether you need a bespoke trading algorithm, a custom indicator, or a full trading infrastructure, we can help.</p>
-
-                <h5 class="fw-bold mt-4">Our Values</h5>
-                <div class="row g-3 mt-2">
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-5">
+                <span class="category-pill small mb-3 px-3 py-2">What We Do</span>
+                <h2 class="fw-bold mb-3">Software first, trading-domain aware.</h2>
+                <p class="text-muted mb-0">Our role is to turn trading rules and operational needs into stable software. That means clear inputs, predictable behavior, sensible defaults, readable documentation, and support that understands both the trading workflow and the technical implementation.</p>
+            </div>
+            <div class="col-lg-7">
+                <div class="row g-3">
                     <div class="col-md-6">
-                        <div class="d-flex gap-3">
-                            <i class="bi bi-shield-check text-success fs-4"></i>
-                            <div>
-                                <h6 class="fw-bold">Security First</h6>
-                                <p class="small text-muted">Your data and transactions are protected at every step.</p>
-                            </div>
+                        <div class="about-capability-card">
+                            <i class="bi bi-cpu"></i>
+                            <strong>Expert Advisors</strong>
+                            <span>Pre-built and custom EAs for automated strategy execution.</span>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="d-flex gap-3">
-                            <i class="bi bi-arrow-repeat text-primary fs-4"></i>
-                            <div>
-                                <h6 class="fw-bold">Reliability</h6>
-                                <p class="small text-muted">Our EAs are tested and built for consistent performance.</p>
-                            </div>
+                        <div class="about-capability-card">
+                            <i class="bi bi-diagram-3"></i>
+                            <strong>Trade Copiers</strong>
+                            <span>Account copying, risk scaling, routing, and monitoring tools.</span>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="d-flex gap-3">
-                            <i class="bi bi-headset text-info fs-4"></i>
-                            <div>
-                                <h6 class="fw-bold">Support</h6>
-                                <p class="small text-muted">We stand behind our products with responsive technical support.</p>
-                            </div>
+                        <div class="about-capability-card">
+                            <i class="bi bi-activity"></i>
+                            <strong>Indicators and Panels</strong>
+                            <span>Signals, dashboards, alerts, and semi-automated workflows.</span>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="d-flex gap-3">
-                            <i class="bi bi-eye text-warning fs-4"></i>
-                            <div>
-                                <h6 class="fw-bold">Transparency</h6>
-                                <p class="small text-muted">Clear pricing, realistic expectations, no hidden terms.</p>
-                            </div>
+                        <div class="about-capability-card">
+                            <i class="bi bi-sliders"></i>
+                            <strong>Risk Controls</strong>
+                            <span>Lot sizing, exposure limits, filters, and safety checks.</span>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm bg-light">
-                    <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3"><i class="bi bi-graph-up-arrow me-2 text-primary"></i>Quick Facts</h5>
-                        <ul class="list-unstyled small">
-                            <li class="mb-2"><strong>Founded:</strong> 2024</li>
-                            <li class="mb-2"><strong>Platforms:</strong> MT4, MT5, Custom</li>
-                            <li class="mb-2"><strong>Products:</strong> 15+ EAs</li>
-                            <li class="mb-2"><strong>Clients:</strong> 500+ Traders</li>
-                        </ul>
-                        <hr>
-                        <p class="small text-muted mb-0">Have a project in mind? We'd love to hear about it.</p>
-                        <a href="/contact" class="btn btn-primary w-100 mt-3">Get in Touch</a>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="section-intro text-center mx-auto mb-4">
+            <span class="category-pill small mb-3 px-3 py-2">How We Work</span>
+            <h2 class="fw-bold mb-3">A practical build process for trading tools.</h2>
+            <p class="text-muted mb-0">Whether you choose a catalog product or request a custom build, the goal is the same: make the rules clear, test the behavior, and keep the software maintainable.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="process-step about-process-card">
+                    <span class="step-number">1</span>
+                    <h3 class="h6 fw-bold mt-3 mb-2">Define Rules</h3>
+                    <p class="small text-muted mb-0">We clarify entries, exits, filters, sessions, symbols, and risk logic before development.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="process-step about-process-card">
+                    <span class="step-number">2</span>
+                    <h3 class="h6 fw-bold mt-3 mb-2">Build Carefully</h3>
+                    <p class="small text-muted mb-0">The software is structured so settings, conditions, and future revisions stay manageable.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="process-step about-process-card">
+                    <span class="step-number">3</span>
+                    <h3 class="h6 fw-bold mt-3 mb-2">Test Behavior</h3>
+                    <p class="small text-muted mb-0">We support backtesting, demo validation, screenshots, and logic review before live use.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="process-step about-process-card">
+                    <span class="step-number">4</span>
+                    <h3 class="h6 fw-bold mt-3 mb-2">Deploy and Support</h3>
+                    <p class="small text-muted mb-0">You receive setup guidance, revision support, and a clear path for improvements.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-6">
+                <span class="category-pill small mb-3 px-3 py-2">Why It Matters</span>
+                <h2 class="fw-bold mb-3">Trading automation should be clear before it is clever.</h2>
+                <p class="text-muted">Financial software fails when hidden assumptions, unclear risk settings, or fragile implementation meet live market conditions. We prefer transparent logic, configurable controls, and supportable systems.</p>
+                <div class="benefit-list mt-4">
+                    <div class="benefit-row">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <div>
+                            <strong>Maintainable builds</strong>
+                            <p class="small text-muted mb-0">A tool should be understandable when it needs debugging, updating, or scaling.</p>
+                        </div>
+                    </div>
+                    <div class="benefit-row">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <div>
+                            <strong>Risk-aware design</strong>
+                            <p class="small text-muted mb-0">Automation needs limits, controls, and realistic expectations from day one.</p>
+                        </div>
+                    </div>
+                    <div class="benefit-row">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <div>
+                            <strong>Support after delivery</strong>
+                            <p class="small text-muted mb-0">Setup, configuration, and revision requests should have a clear support path.</p>
+                        </div>
                     </div>
                 </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="about-principles-panel">
+                    <h3 class="h5 fw-bold mb-3">Our operating principles</h3>
+                    <div class="about-principle">
+                        <span>01</span>
+                        <div>
+                            <strong>No guaranteed-profit claims</strong>
+                            <p>Automation can improve execution discipline, but market risk remains.</p>
+                        </div>
+                    </div>
+                    <div class="about-principle">
+                        <span>02</span>
+                        <div>
+                            <strong>Inputs should be understandable</strong>
+                            <p>Users need settings they can reason about, not black-box confusion.</p>
+                        </div>
+                    </div>
+                    <div class="about-principle">
+                        <span>03</span>
+                        <div>
+                            <strong>Custom work starts with a brief</strong>
+                            <p>Good software begins with clear rules, expected behavior, and constraints.</p>
+                        </div>
+                    </div>
+                    <div class="about-principle">
+                        <span>04</span>
+                        <div>
+                            <strong>Production use needs testing</strong>
+                            <p>Every EA, copier, or indicator should be validated before real capital is used.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="about-cta-band">
+            <div>
+                <span class="small text-uppercase fw-bold">Ready to explore</span>
+                <h2 class="fw-bold mb-2">Choose a product or request a custom trading tool.</h2>
+                <p class="mb-0">Use the catalog for available EAs and tools, or send a project brief if you need custom logic built around your exact requirements.</p>
+            </div>
+            <div class="about-cta-actions">
+                <a href="/products" class="btn btn-light btn-lg">
+                    <i class="bi bi-grid-3x3-gap me-2"></i>View Products
+                </a>
+                <a href="/contact" class="btn btn-outline-light btn-lg">
+                    <i class="bi bi-envelope me-2"></i>Contact Us
+                </a>
             </div>
         </div>
     </div>

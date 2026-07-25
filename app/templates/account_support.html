@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Support - TheFinanceCompany{% endblock %}
+{% block content %}
+
+<section class="account-hero py-5">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item"><a href="/account" class="text-decoration-none">Account</a></li>
+                <li class="breadcrumb-item active">Support</li>
+            </ol>
+        </nav>
+        <span class="category-pill small mb-3 px-3 py-2">Support</span>
+        <h1 class="display-6 fw-bold mb-2">Support and product questions</h1>
+        <p class="lead text-muted mb-0">Send product questions, setup issues, or account support requests from your customer workspace.</p>
+    </div>
+</section>
+
+<section class="pb-5 account-shell" data-account-page="support">
+    <div class="container">
+        {% include 'partials/account_nav.html' %}
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="account-panel">
+                    <h2 class="h5 fw-bold mb-3">Send Support Request</h2>
+                    <form id="accountSupportForm" novalidate>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="supportName">Name</label>
+                                <input type="text" class="form-control" id="supportName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="supportEmail">Email</label>
+                                <input type="email" class="form-control" id="supportEmail" required readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="supportServiceType">Request Type</label>
+                                <select class="form-select" id="supportServiceType">
+                                    <option value="product_support">Product Support</option>
+                                    <option value="setup_help">Setup Help</option>
+                                    <option value="account">Account</option>
+                                    <option value="general">General</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="supportSubject">Subject</label>
+                                <input type="text" class="form-control" id="supportSubject" maxlength="255" placeholder="Order, product, or setup topic">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold" for="supportMessage">Message</label>
+                                <textarea class="form-control" id="supportMessage" rows="6" required placeholder="Tell us what you need help with. Include order ID, product name, platform, screenshots, or setup context where useful."></textarea>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-4" id="supportSubmitBtn">
+                            <i class="bi bi-send me-1"></i>Send Support Request
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="account-panel">
+                    <h2 class="h5 fw-bold mb-3">Recent Support Requests</h2>
+                    <div id="accountSupportList">
+                        <p class="text-muted small mb-0">Loading support requests...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/account.js?v=20260723-customer-portal"></script>
+{% endblock %}

@@ -1,0 +1,514 @@
+{% extends 'admin/base.html' %}
+{% block title %}Users - Admin{% endblock %}
+{% block content %}
+
+<div class="admin-page-header mb-4">
+    <div>
+        <span class="category-pill small mb-2 px-3 py-2">User Management</span>
+        <h4 class="fw-bold mb-1">Users</h4>
+        <p class="text-muted mb-0">Create customer/admin accounts, control account access, and review customer order history.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <button type="button" class="btn btn-outline-primary" id="refreshCustomersBtn">
+            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+        </button>
+        <button type="button" class="btn btn-primary" id="newUserBtn">
+            <i class="bi bi-person-plus me-1"></i>New User
+        </button>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card">
+            <span class="text-muted small">Total Users</span>
+            <strong id="statUserTotal">0</strong>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card">
+            <span class="text-muted small">Active</span>
+            <strong class="text-success" id="statActiveTotal">0</strong>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card">
+            <span class="text-muted small">Restricted</span>
+            <strong class="text-warning" id="statRestrictedTotal">0</strong>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card">
+            <span class="text-muted small">Paid Value</span>
+            <strong id="statPaidValue">$0.00</strong>
+        </div>
+    </div>
+</div>
+
+<div class="admin-panel">
+    <div class="admin-toolbar">
+        <div class="input-group admin-search">
+            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+            <input type="search" class="form-control" id="customerSearch" placeholder="Search name, email, phone, role, or status">
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <select class="form-select admin-status-filter" id="roleFilter">
+                <option value="">All roles</option>
+                <option value="customer">Customers</option>
+                <option value="admin">Admins</option>
+            </select>
+            <select class="form-select admin-status-filter" id="statusFilter">
+                <option value="">All statuses</option>
+                <option value="active">Active</option>
+                <option value="suspended">Suspended</option>
+                <option value="disabled">Disabled</option>
+            </select>
+            <select class="form-select admin-status-filter" id="pageSizeSelect">
+                <option value="10">10 / page</option>
+                <option value="20" selected>20 / page</option>
+                <option value="50">50 / page</option>
+                <option value="100">100 / page</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table admin-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="small">User</th>
+                    <th class="small">Role</th>
+                    <th class="small">Status</th>
+                    <th class="small">Orders</th>
+                    <th class="small">Paid Value</th>
+                    <th class="small">Joined</th>
+                    <th class="small text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="customersBody">
+                <tr><td colspan="7" class="text-muted text-center small py-4">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="admin-pagination pt-3 mt-3 border-top">
+        <div class="text-muted small" id="customerPageSummary">Showing 0 users</div>
+        <div class="btn-group btn-group-sm" role="group" aria-label="User pagination">
+            <button type="button" class="btn btn-outline-secondary" id="prevPageBtn">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary disabled" id="currentPageBtn">Page 1 of 1</button>
+            <button type="button" class="btn btn-outline-secondary" id="nextPageBtn">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="userEditorModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form id="userEditorForm">
+                <div class="modal-header border-0">
+                    <div>
+                        <h5 class="modal-title fw-bold mb-1" id="userEditorTitle">New User</h5>
+                        <p class="text-muted small mb-0" id="userEditorSubtitle">Create an account that can sign in to the web app.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pt-0">
+                    <input type="hidden" id="editorUserId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Full name</label>
+                            <input type="text" class="form-control" id="editorFullName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Email</label>
+                            <input type="email" class="form-control" id="editorEmail" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Phone</label>
+                            <input type="text" class="form-control" id="editorPhone">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Role</label>
+                            <select class="form-select" id="editorRole">
+                                <option value="customer">Customer</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Status</label>
+                            <select class="form-select" id="editorStatus">
+                                <option value="active">Active</option>
+                                <option value="suspended">Suspended</option>
+                                <option value="disabled">Disabled</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Password</label>
+                            <input type="password" class="form-control" id="editorPassword" minlength="6">
+                            <div class="form-text" id="passwordHelp">Required for new users. Leave blank while editing to keep the current password.</div>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning small mt-4 mb-0">
+                        <i class="bi bi-shield-exclamation me-1"></i>
+                        Suspended or disabled users cannot sign in. Users with order or license history should be suspended instead of deleted.
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveUserBtn">
+                        <i class="bi bi-check2-circle me-1"></i>Save User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="customerModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <div>
+                    <h5 class="modal-title fw-bold mb-1" id="customerModalTitle">User Details</h5>
+                    <p class="text-muted small mb-0" id="customerModalSubtitle"></p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="admin-detail-box">
+                            <span class="text-muted small">Email</span>
+                            <strong class="admin-detail-value" id="modalCustomerEmail"></strong>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="admin-detail-box">
+                            <span class="text-muted small">Role</span>
+                            <div id="modalCustomerRole"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="admin-detail-box">
+                            <span class="text-muted small">Status</span>
+                            <div id="modalCustomerStatus"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="admin-detail-box">
+                            <span class="text-muted small">Orders</span>
+                            <strong id="modalCustomerOrders">0</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="admin-detail-box">
+                            <span class="text-muted small">Paid Value</span>
+                            <strong id="modalCustomerPaidValue">$0.00</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold mb-3">Orders</h6>
+                <div class="table-responsive">
+                    <table class="table admin-table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="small">Order</th>
+                                <th class="small">Items</th>
+                                <th class="small">Total</th>
+                                <th class="small">Status</th>
+                                <th class="small">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalOrdersBody">
+                            <tr><td colspan="5" class="text-muted text-center small py-4">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+var allCustomers = [];
+var customerModal = null;
+var userEditorModal = null;
+var customerPage = {
+    page: 1,
+    pageSize: 20,
+    total: 0,
+    pages: 1
+};
+var searchTimer = null;
+
+function escapeAdminHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function(ch) {
+        return {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[ch];
+    });
+}
+
+function formatMoney(value) {
+    return '$' + parseFloat(value || 0).toFixed(2);
+}
+
+function formatDate(value) {
+    return value ? new Date(value).toLocaleString() : 'Never';
+}
+
+function roleBadge(role) {
+    var cleanRole = role || 'customer';
+    var badgeClass = cleanRole === 'admin' ? 'danger' : 'primary';
+    return '<span class="badge bg-' + badgeClass + ' bg-opacity-10 text-' + badgeClass + ' small">' + escapeAdminHtml(cleanRole) + '</span>';
+}
+
+function accountStatusBadge(status) {
+    var cleanStatus = status || 'active';
+    var badgeClass = cleanStatus === 'active' ? 'success' : cleanStatus === 'suspended' ? 'warning' : 'secondary';
+    return '<span class="badge bg-' + badgeClass + ' bg-opacity-10 text-' + badgeClass + ' small">' + escapeAdminHtml(cleanStatus) + '</span>';
+}
+
+function orderStatusBadge(status) {
+    var badgeClass = (status === 'paid' || status === 'confirmed') ? 'success' : status === 'pending' ? 'warning' : status === 'failed' ? 'danger' : 'secondary';
+    return '<span class="badge bg-' + badgeClass + ' bg-opacity-10 text-' + badgeClass + ' small">' + escapeAdminHtml(status || 'pending') + '</span>';
+}
+
+function updateStats(stats) {
+    document.getElementById('statUserTotal').textContent = stats.total_users || 0;
+    document.getElementById('statActiveTotal').textContent = stats.active_users || 0;
+    document.getElementById('statRestrictedTotal').textContent = stats.restricted_users || 0;
+    document.getElementById('statPaidValue').textContent = formatMoney(stats.paid_value);
+}
+
+function currentCustomerParams(page) {
+    var role = document.getElementById('roleFilter').value;
+    var status = document.getElementById('statusFilter').value;
+    var search = document.getElementById('customerSearch').value.trim();
+    var pageSize = parseInt(document.getElementById('pageSizeSelect').value, 10) || 20;
+    var params = new URLSearchParams({
+        page: page || customerPage.page,
+        page_size: pageSize
+    });
+    if (role) params.set('role', role);
+    if (status) params.set('status', status);
+    if (search) params.set('search', search);
+    return params;
+}
+
+function renderCustomers() {
+    var customers = allCustomers;
+    var tbody = document.getElementById('customersBody');
+    if (!customers.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center small py-4">No users match the current filters.</td></tr>';
+        updatePagination();
+        return;
+    }
+
+    tbody.innerHTML = customers.map(function(user) {
+        return '<tr>' +
+            '<td><div class="admin-user-cell"><div class="admin-user-avatar">' + escapeAdminHtml((user.full_name || user.email || 'U').charAt(0).toUpperCase()) + '</div><div><div class="fw-semibold small">' + escapeAdminHtml(user.full_name || 'No name') + '</div><div class="text-muted small">' + escapeAdminHtml(user.email) + '</div><div class="text-muted small">' + escapeAdminHtml(user.phone || 'No phone') + '</div></div></div></td>' +
+            '<td>' + roleBadge(user.role) + '</td>' +
+            '<td>' + accountStatusBadge(user.status) + '</td>' +
+            '<td><div class="fw-semibold small">' + (user.order_count || 0) + '</div><div class="text-muted small">' + (user.confirmed_orders || 0) + ' confirmed, ' + (user.paid_orders || 0) + ' paid</div></td>' +
+            '<td class="fw-semibold small">' + formatMoney(user.paid_order_value) + '</td>' +
+            '<td class="text-muted small">' + formatDate(user.created_at) + '</td>' +
+            '<td class="text-end"><div class="btn-group btn-group-sm" role="group">' +
+                '<button type="button" class="btn btn-outline-primary" onclick="openCustomerModal(' + user.id + ')"><i class="bi bi-eye"></i></button>' +
+                '<button type="button" class="btn btn-outline-secondary" onclick="openUserEditor(' + user.id + ')"><i class="bi bi-pencil"></i></button>' +
+                '<button type="button" class="btn btn-outline-danger" onclick="deleteUser(' + user.id + ')"><i class="bi bi-trash"></i></button>' +
+            '</div></td>' +
+            '</tr>';
+    }).join('');
+    updatePagination();
+}
+
+function updatePagination() {
+    var start = customerPage.total ? ((customerPage.page - 1) * customerPage.pageSize) + 1 : 0;
+    var end = Math.min(customerPage.page * customerPage.pageSize, customerPage.total);
+    document.getElementById('customerPageSummary').textContent = 'Showing ' + start + '-' + end + ' of ' + customerPage.total + ' users';
+    document.getElementById('currentPageBtn').textContent = 'Page ' + customerPage.page + ' of ' + customerPage.pages;
+    document.getElementById('prevPageBtn').disabled = customerPage.page <= 1;
+    document.getElementById('nextPageBtn').disabled = customerPage.page >= customerPage.pages;
+}
+
+function loadCustomers(page) {
+    var params = currentCustomerParams(page || customerPage.page);
+    document.getElementById('customersBody').innerHTML = '<tr><td colspan="7" class="text-muted text-center small py-4">Loading users...</td></tr>';
+    fetch('/api/admin/customers?' + params.toString())
+        .then(function(r) {
+            if (!r.ok) throw new Error('Unable to load users');
+            return r.json();
+        })
+        .then(function(data) {
+            allCustomers = data.items || [];
+            customerPage.page = data.page || 1;
+            customerPage.pageSize = data.page_size || parseInt(document.getElementById('pageSizeSelect').value, 10) || 20;
+            customerPage.total = data.total || 0;
+            customerPage.pages = data.pages || 1;
+            updateStats(data.stats || {});
+            renderCustomers();
+        })
+        .catch(function(err) {
+            document.getElementById('customersBody').innerHTML = '<tr><td colspan="7" class="text-danger text-center small py-4">' + escapeAdminHtml(err.message) + '</td></tr>';
+            customerPage.total = 0;
+            customerPage.pages = 1;
+            updatePagination();
+        });
+}
+
+function openUserEditor(userId) {
+    var user = userId ? allCustomers.find(function(item) { return item.id === userId; }) : null;
+    document.getElementById('editorUserId').value = user ? user.id : '';
+    document.getElementById('editorFullName').value = user ? (user.full_name || '') : '';
+    document.getElementById('editorEmail').value = user ? (user.email || '') : '';
+    document.getElementById('editorPhone').value = user ? (user.phone || '') : '';
+    document.getElementById('editorRole').value = user ? (user.role || 'customer') : 'customer';
+    document.getElementById('editorStatus').value = user ? (user.status || 'active') : 'active';
+    document.getElementById('editorPassword').value = '';
+    document.getElementById('editorPassword').required = !user;
+    document.getElementById('userEditorTitle').textContent = user ? 'Edit User' : 'New User';
+    document.getElementById('userEditorSubtitle').textContent = user ? 'Update profile, role, access status, or reset the password.' : 'Create an account that can sign in to the web app.';
+    userEditorModal.show();
+}
+
+function saveUser(event) {
+    event.preventDefault();
+    var userId = document.getElementById('editorUserId').value;
+    var password = document.getElementById('editorPassword').value;
+    var payload = {
+        full_name: document.getElementById('editorFullName').value.trim(),
+        email: document.getElementById('editorEmail').value.trim(),
+        phone: document.getElementById('editorPhone').value.trim(),
+        role: document.getElementById('editorRole').value,
+        status: document.getElementById('editorStatus').value
+    };
+    if (password) {
+        payload.password = password;
+    }
+
+    var url = userId ? '/api/admin/customers/' + userId : '/api/admin/customers';
+    var method = userId ? 'PUT' : 'POST';
+    fetch(url, {
+        method: method,
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+    })
+        .then(function(r) {
+            if (!r.ok) {
+                return r.json().then(function(err) {
+                    throw new Error(err.detail || 'Unable to save user');
+                });
+            }
+            return r.json();
+        })
+        .then(function() {
+            userEditorModal.hide();
+            loadCustomers(customerPage.page);
+        })
+        .catch(function(err) {
+            alert(err.message);
+        });
+}
+
+function deleteUser(userId) {
+    var user = allCustomers.find(function(item) { return item.id === userId; });
+    if (!user) return;
+    if (!confirm('Delete ' + (user.full_name || user.email) + '? Users with order or license history must be suspended instead.')) return;
+
+    fetch('/api/admin/customers/' + userId, {method: 'DELETE'})
+        .then(function(r) {
+            if (!r.ok && r.status !== 204) {
+                return r.json().then(function(err) {
+                    throw new Error(err.detail || 'Unable to delete user');
+                });
+            }
+            loadCustomers(customerPage.page);
+        })
+        .catch(function(err) {
+            alert(err.message);
+        });
+}
+
+function openCustomerModal(userId) {
+    var user = allCustomers.find(function(item) { return item.id === userId; });
+    if (!user) return;
+    document.getElementById('customerModalTitle').textContent = user.full_name || user.email;
+    document.getElementById('customerModalSubtitle').textContent = 'Joined ' + formatDate(user.created_at);
+    document.getElementById('modalCustomerEmail').textContent = user.email || '';
+    document.getElementById('modalCustomerRole').innerHTML = roleBadge(user.role);
+    document.getElementById('modalCustomerStatus').innerHTML = accountStatusBadge(user.status);
+    document.getElementById('modalCustomerOrders').textContent = user.order_count || 0;
+    document.getElementById('modalCustomerPaidValue').textContent = formatMoney(user.paid_order_value);
+    document.getElementById('modalOrdersBody').innerHTML = '<tr><td colspan="5" class="text-muted text-center small py-4">Loading orders...</td></tr>';
+    customerModal.show();
+
+    fetch('/api/admin/customers/' + userId)
+        .then(function(r) {
+            if (!r.ok) throw new Error('Unable to load user details');
+            return r.json();
+        })
+        .then(function(detail) {
+            renderCustomerOrders(detail.orders || []);
+        })
+        .catch(function(err) {
+            document.getElementById('modalOrdersBody').innerHTML = '<tr><td colspan="5" class="text-danger text-center small py-4">' + escapeAdminHtml(err.message) + '</td></tr>';
+        });
+}
+
+function renderCustomerOrders(orders) {
+    var tbody = document.getElementById('modalOrdersBody');
+    if (!orders.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-muted text-center small py-4">No orders for this user yet.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = orders.map(function(order) {
+        var items = order.items || [];
+        var preview = items.map(function(item) {
+            return escapeAdminHtml(item.product_name) + ' x' + item.quantity;
+        }).join(', ');
+        return '<tr>' +
+            '<td><div class="fw-semibold small">#' + order.id + '</div><div class="text-muted small">' + escapeAdminHtml(order.customer_email) + '</div></td>' +
+            '<td class="small">' + (preview || 'No items') + '</td>' +
+            '<td class="fw-semibold small">' + formatMoney(order.total_amount) + '</td>' +
+            '<td>' + orderStatusBadge(order.status) + '</td>' +
+            '<td class="text-muted small">' + formatDate(order.created_at) + '</td>' +
+            '</tr>';
+    }).join('');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    customerModal = new bootstrap.Modal(document.getElementById('customerModal'));
+    userEditorModal = new bootstrap.Modal(document.getElementById('userEditorModal'));
+    document.getElementById('refreshCustomersBtn').addEventListener('click', function() { loadCustomers(customerPage.page); });
+    document.getElementById('newUserBtn').addEventListener('click', function() { openUserEditor(null); });
+    document.getElementById('userEditorForm').addEventListener('submit', saveUser);
+    document.getElementById('customerSearch').addEventListener('input', function() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function() {
+            loadCustomers(1);
+        }, 250);
+    });
+    document.getElementById('roleFilter').addEventListener('change', function() { loadCustomers(1); });
+    document.getElementById('statusFilter').addEventListener('change', function() { loadCustomers(1); });
+    document.getElementById('pageSizeSelect').addEventListener('change', function() { loadCustomers(1); });
+    document.getElementById('prevPageBtn').addEventListener('click', function() {
+        if (customerPage.page > 1) loadCustomers(customerPage.page - 1);
+    });
+    document.getElementById('nextPageBtn').addEventListener('click', function() {
+        if (customerPage.page < customerPage.pages) loadCustomers(customerPage.page + 1);
+    });
+    loadCustomers(1);
+});
+</script>
+{% endblock %}

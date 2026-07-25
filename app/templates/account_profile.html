@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Profile - TheFinanceCompany{% endblock %}
+{% block content %}
+
+<section class="account-hero py-5">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item"><a href="/account" class="text-decoration-none">Account</a></li>
+                <li class="breadcrumb-item active">Profile</li>
+            </ol>
+        </nav>
+        <span class="category-pill small mb-3 px-3 py-2">Profile</span>
+        <h1 class="display-6 fw-bold mb-2">Customer profile</h1>
+        <p class="lead text-muted mb-0">Keep your customer details current so orders, support, and future licensing records stay connected.</p>
+    </div>
+</section>
+
+<section class="pb-5 account-shell" data-account-page="profile">
+    <div class="container">
+        {% include 'partials/account_nav.html' %}
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="account-panel">
+                    <h2 class="h5 fw-bold mb-3">Profile Details</h2>
+                    <form id="accountProfileForm" novalidate>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold" for="profileFullName">Full Name</label>
+                            <input type="text" class="form-control" id="profileFullName" maxlength="255" required>
+                            <div class="invalid-feedback">Please enter your name.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold" for="profileEmail">Email</label>
+                            <input type="email" class="form-control" id="profileEmail" disabled>
+                            <div class="form-text">Email changes are not enabled yet because orders and project records are matched by email.</div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-semibold" for="profilePhone">Phone</label>
+                            <input type="tel" class="form-control" id="profilePhone" maxlength="50">
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="profileSaveBtn">
+                            <i class="bi bi-check2-circle me-1"></i>Save Profile
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="account-panel mb-4">
+                    <h2 class="h5 fw-bold mb-3">Account Status</h2>
+                    <div id="profileStatusPanel">
+                        <p class="text-muted small mb-0">Loading profile...</p>
+                    </div>
+                </div>
+                <div class="account-panel">
+                    <h2 class="h5 fw-bold mb-3">Authentication</h2>
+                    <div class="account-next-row">
+                        <i class="bi bi-envelope-at"></i>
+                        <div>
+                            <strong>Email/password today</strong>
+                            <span>Google/Gmail login can replace or supplement this later.</span>
+                        </div>
+                    </div>
+                    <div class="account-next-row">
+                        <i class="bi bi-shield-lock"></i>
+                        <div>
+                            <strong>Password recovery pending</strong>
+                            <span>Forgot password and OTP flows are planned for a later auth pass.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/account.js?v=20260723-customer-portal"></script>
+{% endblock %}

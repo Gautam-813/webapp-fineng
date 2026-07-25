@@ -30,7 +30,15 @@ pip install -r requirements.txt
 Create a `.env` file in the project root:
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/thefinancecompany
+ENVIRONMENT=production
+DEBUG=false
+AUTO_CREATE_TABLES=false
 SECRET_KEY=your-secret-key-here
+SECURE_COOKIES=true
+ALLOWED_HOSTS=thefinancecompany.com,www.thefinancecompany.com
+CORS_ORIGINS=https://thefinancecompany.com,https://www.thefinancecompany.com
+RATE_LIMIT_ENABLED=true
+MAX_UPLOAD_SIZE_MB=5
 
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_PUBLISHABLE_KEY=pk_test_...
@@ -48,16 +56,14 @@ CREATE DATABASE thefinancecompany;
 
 ### 6. Run Database Migrations
 ```bash
-# If using Alembic
 alembic upgrade head
-
-# Or auto-create tables on first run
-python -c "from app.database import init_db; init_db()"
 ```
+
+Local SQLite development can use `AUTO_CREATE_TABLES=true` to auto-create tables on app startup. Production should use `AUTO_CREATE_TABLES=false` and run Alembic migrations explicitly before the app starts.
 
 ### 7. Seed Sample Data (Optional)
 ```bash
-python scripts/seed_data.py
+python app/scripts/seed_data.py
 ```
 
 ### 8. Run the Development Server
@@ -85,7 +91,7 @@ pydantic-settings==2.3.0
 
 ## Running Tests
 ```bash
-pytest
+python app/scripts/smoke_test.py --base-url http://127.0.0.1:8000
 ```
 
 ## Deployment

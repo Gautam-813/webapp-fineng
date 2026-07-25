@@ -11,6 +11,7 @@
 | full_name | VARCHAR(255) | |
 | phone | VARCHAR(50) | |
 | role | VARCHAR(20) DEFAULT 'customer' | customer / admin |
+| status | VARCHAR(20) DEFAULT 'active' | active / suspended / disabled |
 | created_at | TIMESTAMP DEFAULT NOW() | |
 | updated_at | TIMESTAMP DEFAULT NOW() | |
 
@@ -85,7 +86,7 @@ Index: `idx_products_slug` on `slug`
 | user_id | INT FK -> users.id | Nullable |
 | customer_email | VARCHAR(255) NOT NULL | |
 | customer_name | VARCHAR(255) NOT NULL | |
-| status | VARCHAR(20) DEFAULT 'pending' | pending / paid / failed / refunded / cancelled |
+| status | VARCHAR(20) DEFAULT 'pending' | confirmed / pending / paid / failed / refunded / cancelled |
 | subtotal | DECIMAL(10,2) | |
 | tax_amount | DECIMAL(10,2) DEFAULT 0 | |
 | discount_amount | DECIMAL(10,2) DEFAULT 0 | |

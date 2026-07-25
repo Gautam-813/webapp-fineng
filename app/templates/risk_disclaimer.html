@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Risk Disclaimer - TheFinanceCompany{% endblock %}
+{% block content %}
+
+<section class="legal-hero py-5">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item active">Risk Disclaimer</li>
+            </ol>
+        </nav>
+        <div class="row g-4 align-items-end">
+            <div class="col-lg-8">
+                <span class="category-pill small mb-3 px-3 py-2">Trading Risk</span>
+                <h1 class="display-6 fw-bold mb-3">Risk Disclaimer</h1>
+                <p class="lead text-muted mb-0">Trading software can support execution and consistency, but it does not remove market risk or guarantee profitable results.</p>
+            </div>
+            <div class="col-lg-4">
+                <div class="legal-summary-box">
+                    <span>Last updated</span>
+                    <strong>July 18, 2026</strong>
+                    <p>This draft should be reviewed by qualified legal counsel before production launch.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="legal-layout">
+            <aside class="legal-sidebar">
+                <a href="/risk-disclaimer" class="active">Risk Disclaimer</a>
+                <a href="/terms">Terms</a>
+                <a href="/privacy-policy">Privacy Policy</a>
+                <a href="/refund-policy">Refund Policy</a>
+            </aside>
+
+            <article class="legal-content">
+                <div class="legal-callout">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <div>
+                        <strong>No financial advice or profit guarantee.</strong>
+                        <p>TheFinanceCompany provides software tools and related technical services. We do not provide personalized investment, financial, legal, tax, or brokerage advice.</p>
+                    </div>
+                </div>
+
+                <section class="legal-section">
+                    <h2>1. Trading involves substantial risk</h2>
+                    <p>Foreign exchange, commodities, contracts for difference, indices, digital assets, and other financial markets can be volatile. You may lose some or all of the money you trade. In leveraged or margin trading, losses can occur quickly and may exceed your initial deposit depending on your broker, account type, and local rules.</p>
+                    <p>You should trade only with funds you can afford to lose and should carefully consider your experience, objectives, financial situation, and risk tolerance before using any trading software.</p>
+                </section>
+
+                <section class="legal-section">
+                    <h2>2. Software does not guarantee performance</h2>
+                    <p>Expert Advisors, indicators, trade copiers, dashboards, scripts, and automation tools are software. They may help follow rules, monitor markets, or execute instructions, but they cannot predict markets or guarantee profits.</p>
+                    <p>Past performance, backtests, screenshots, demo results, optimization reports, or examples are not guarantees of future results. Market conditions can change, execution quality can vary, and technical issues can affect outcomes.</p>
+                </section>
+
+                <section class="legal-section">
+                    <h2>3. You remain responsible for trading decisions</h2>
+                    <p>You are responsible for selecting products, configuring settings, choosing brokers, deciding position sizes, monitoring live activity, and deciding whether software is suitable for your use. You should test any tool in a demo environment before using it with live funds.</p>
+                </section>
+
+                <section class="legal-section">
+                    <h2>4. Technical and operational risks</h2>
+                    <p>Automated trading can be affected by internet outages, VPS failures, broker execution delays, spreads, slippage, platform updates, incorrect settings, account restrictions, market gaps, and third-party service interruptions.</p>
+                    <p>You should monitor active systems and use risk limits, maximum drawdown controls, and emergency stop procedures where appropriate.</p>
+                </section>
+
+                <section class="legal-section">
+                    <h2>5. Regulatory and broker responsibility</h2>
+                    <p>You are responsible for ensuring that your trading activity, broker relationship, software use, and account setup comply with applicable laws, regulations, broker terms, and exchange or market rules in your jurisdiction.</p>
+                </section>
+
+                <section class="legal-section">
+                    <h2>6. Contact before purchase</h2>
+                    <p>If you are unsure whether a product is suitable for your intended use, contact us before placing an order. We can explain software features and technical behavior, but we cannot tell you whether a trade or strategy is financially suitable for you.</p>
+                </section>
+            </article>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
