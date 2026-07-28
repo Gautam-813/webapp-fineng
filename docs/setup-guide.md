@@ -4,7 +4,8 @@
 - Python 3.10 or higher
 - PostgreSQL 14 or higher
 - Git
-- Stripe / PayPal account for payment processing
+- Resend account and verified sending domain for OTP email delivery
+- Stripe / PayPal account only when production payment collection is added later
 
 ## Local Development Setup
 
@@ -37,8 +38,19 @@ SECRET_KEY=your-secret-key-here
 SECURE_COOKIES=true
 ALLOWED_HOSTS=thefinancecompany.com,www.thefinancecompany.com
 CORS_ORIGINS=https://thefinancecompany.com,https://www.thefinancecompany.com
+CSRF_PROTECTION_ENABLED=true
+CSRF_EXEMPT_PATHS=/api/payments/webhook
 RATE_LIMIT_ENABLED=true
 MAX_UPLOAD_SIZE_MB=5
+
+EMAIL_ENABLED=true
+RESEND_API_KEY=re_...
+EMAIL_FROM_LOGIN=login@thefinanceengine.com
+OTP_EXPIRY_MINUTES=10
+OTP_RESEND_COOLDOWN_SECONDS=60
+OTP_MAX_ATTEMPTS=5
+REGISTRATION_ALLOWED_DOMAINS=gmail.com
+SITE_URL=https://thefinancecompany.com
 
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_PUBLISHABLE_KEY=pk_test_...
@@ -73,6 +85,16 @@ uvicorn app.main:app --reload --port 8000
 
 ### 9. Open the Website
 Visit `http://localhost:8000`
+
+Customer registration requires a Gmail address and a valid OTP sent through Resend when `EMAIL_ENABLED=true`.
+
+### 10. Send a Test OTP Email
+```bash
+python app/scripts/send_test_email.py your-test@gmail.com --purpose registration
+python app/scripts/send_test_email.py your-test@gmail.com --purpose password_reset
+```
+
+The script prints the Resend message ID when delivery is accepted. Check Inbox, Spam, Promotions, and Updates folders.
 
 ## Project Dependencies (`requirements.txt`)
 ```

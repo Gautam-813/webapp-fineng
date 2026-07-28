@@ -24,8 +24,8 @@ A website that sells pre-built financial software (Expert Advisors / EAs) and ge
 - As a customer, I can add EAs to my shopping cart
 - As a customer, I can review my cart before checkout
 - As a customer, I can check out with my name and email
-- As a customer, I can pay via a secure payment provider (Stripe/PayPal)
-- As a customer, I receive confirmation after successful payment
+- As a customer, I can place a demo order without payment while payment integration is pending
+- As a customer, I receive an order confirmation after checkout
 
 ### Contact & Inquiries
 - As a visitor, I can contact the company via a contact form
@@ -42,8 +42,8 @@ A website that sells pre-built financial software (Expert Advisors / EAs) and ge
 | F1 | Product Catalog | Display all EAs with thumbnails, prices, categories |
 | F2 | Product Detail | Full description, features, platform compatibility, price |
 | F3 | Shopping Cart | Add/remove items, view totals, stored in localStorage |
-| F4 | Checkout | Collect customer info, create order, redirect to payment |
-| F5 | Payment Integration | Redirect to hosted payment page, webhook confirmation |
+| F4 | Checkout | Collect customer info, validate prices server-side, create confirmed demo order |
+| F5 | Payment Integration | Future hosted payment page, webhook confirmation, refunds, and paid status transitions |
 | F6 | Contact Form | Name, email, phone, company, subject, message |
 | F7 | Custom Project Request | Project type, budget, timeline, description |
 | F8 | About Page | Static company information |

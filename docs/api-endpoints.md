@@ -11,7 +11,8 @@
 | GET | `/checkout` | Checkout page |
 | GET | `/about` | About Us page |
 | GET | `/contact` | Contact Us page |
-| GET | `/payment/success` | Payment success confirmation |
+| GET | `/order/confirmation` | Demo order confirmation |
+| GET | `/payment/success` | Legacy payment success confirmation |
 | GET | `/payment/cancelled` | Payment cancelled page |
 
 ## Product API
@@ -146,7 +147,7 @@ Clear entire cart.
 ## Checkout API
 
 ### POST /api/checkout
-Create order and initiate payment session.
+Create a confirmed demo order. No payment session is created in the current flow.
 
 **Request:**
 ```json
@@ -166,7 +167,7 @@ Create order and initiate payment session.
 ```json
 {
   "order_id": 123,
-  "payment_url": "https://checkout.stripe.com/pay/cs_test_..."
+  "confirmation_url": "/order/confirmation?order_id=123"
 }
 ```
 
@@ -176,16 +177,19 @@ Create order and initiate payment session.
 ## Payment API
 
 ### POST /api/payments/webhook
-Webhook endpoint for payment provider callbacks.
+Reserved webhook endpoint for future payment provider callbacks.
 
 **Request:** Provider-specific payload (Stripe event / PayPal webhook)
 
 **Response:** `200 OK`
 ```json
 {
-  "status": "received"
+  "status": "received",
+  "note": "Webhook secret not configured"
 }
 ```
+
+Current demo checkout orders use status `confirmed`. Only future `paid` orders should be counted as revenue.
 
 ## Contact API
 

@@ -8,7 +8,9 @@ This project is currently a functional demo web app for TheFinanceCompany. The b
 - Demo checkout does not collect payment and does not count confirmed orders as paid revenue.
 - Products, categories, orders, inquiries, project requests, and users are manageable from admin screens.
 - Product thumbnail and gallery image uploads are supported for product detail pages.
-- Customer registration and login use email/password only. There is no OTP or email verification yet.
+- Customer registration uses Gmail-only email addresses and emailed OTP verification through Resend.
+- Forgot password uses emailed OTP verification before changing the password.
+- Cookie-authenticated state-changing requests are protected by same-origin CSRF checks.
 - Downloads and licensing are intentionally left for the licensing system integration.
 
 ## Must Finish Before Production
@@ -18,9 +20,9 @@ This project is currently a functional demo web app for TheFinanceCompany. The b
 - Keep schema changes in Alembic migrations and run them before each production deployment.
 - Enable HTTPS at the deployment edge and use `SECURE_COOKIES=true` in production.
 - Keep app rate limiting enabled for login, registration, checkout, contact, and project request endpoints; add proxy/WAF-level limits before launch.
-- Add CSRF protection or a clear same-site API strategy for browser form actions.
-- Add email verification or OTP if the business requires verified Gmail-only registration later.
-- Add password reset, account recovery, and admin password rotation procedures.
+- Keep CSRF protection enabled and configure `SITE_URL`, `CORS_ORIGINS`, and `CSRF_EXEMPT_PATHS` for the production domain and payment webhooks.
+- Monitor OTP delivery, bounce/spam placement, resend rates, provider message IDs, and failed verification attempts.
+- Add admin password rotation procedures.
 - Add real payment integration, webhook validation, payment status transitions, and refund handling.
 - Integrate the licensing/download system after payment or confirmed manual approval rules are decided.
 - Keep upload size limits enabled and add production object storage for product media.
@@ -62,6 +64,17 @@ python app/scripts/smoke_test.py --admin-email admin@thefinancecompany.com --adm
 
 The script checks public pages, catalog pagination, product detail rendering, cart actions, empty checkout validation, customer registration/login, demo order creation, customer account history, admin pages, admin paginated APIs, and admin order search. Temporary customer, cart, and order data is cleaned up automatically unless `--keep-data` is passed.
 
+## Email Delivery Check
+
+Use the manual email test before production deploys, DNS changes, sender changes, or OTP template edits:
+
+```bash
+python app/scripts/send_test_email.py test-recipient@gmail.com --purpose registration
+python app/scripts/send_test_email.py test-recipient@gmail.com --purpose password_reset
+```
+
+The script uses the real Resend API and prints the provider message ID. Check Inbox, Spam, Promotions, and Updates folders for the test email. The app logs email send attempts, failures, and provider IDs without logging OTP values or API keys.
+
 ## Visual QA
 
 Use `docs/visual-qa-checklist.md` after frontend changes. The current visual QA pass checks public, buyer, account, legal, and admin pages at desktop and mobile widths for horizontal overflow, clipped controls, broken images, and console errors.
@@ -89,10 +102,20 @@ SECURE_COOKIES=true
 ALLOWED_HOSTS=thefinancecompany.com,www.thefinancecompany.com
 CORS_ORIGINS=https://thefinancecompany.com,https://www.thefinancecompany.com
 RATE_LIMIT_ENABLED=true
+CSRF_PROTECTION_ENABLED=true
+CSRF_EXEMPT_PATHS=/api/payments/webhook
 MAX_UPLOAD_SIZE_MB=5
+EMAIL_ENABLED=true
+RESEND_API_KEY=...
+EMAIL_FROM_LOGIN=login@thefinanceengine.com
+OTP_EXPIRY_MINUTES=10
+OTP_RESEND_COOLDOWN_SECONDS=60
+OTP_MAX_ATTEMPTS=5
+REGISTRATION_ALLOWED_DOMAINS=gmail.com
+SITE_URL=https://thefinancecompany.com
 ```
 
-The app also adds baseline security headers, including clickjacking protection, content-type sniffing protection, referrer policy, permissions policy, and a conservative content security policy compatible with the current Bootstrap CDN setup.
+The app also adds baseline security headers, including clickjacking protection, content-type sniffing protection, referrer policy, permissions policy, and a conservative content security policy compatible with the current Bootstrap CDN setup. State-changing browser requests are checked against the request origin/referer so authenticated cookie requests cannot be triggered from another site.
 
 ## Known Demo Constraints
 
@@ -100,4 +123,4 @@ The app also adds baseline security headers, including clickjacking protection, 
 - Admin revenue intentionally counts only `paid` orders.
 - Product download files are not delivered by this app yet.
 - Licensing will be connected later by the licensing-system workstream.
-- Gmail-only registration and authentic Gmail verification are not enforced yet.
+- Google OAuth/Gmail login is not implemented yet; registration currently uses email/password plus OTP.

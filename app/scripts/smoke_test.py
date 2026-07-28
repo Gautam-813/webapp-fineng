@@ -126,6 +126,7 @@ def run(args: argparse.Namespace) -> None:
 
     for session in (public, customer, admin):
         session.request = _with_timeout(session.request, timeout)
+        session.headers.update({"Origin": base_url, "Referer": f"{base_url}/"})
 
     try:
         step("checking health and public pages")
@@ -368,6 +369,15 @@ def run(args: argparse.Namespace) -> None:
                 any(project["email"] == customer_email for project in project_search["items"]),
                 "admin project request search did not find the smoke project request",
             )
+
+        step("checking CSRF origin protection")
+        response = customer.post(
+            f"{base_url}/api/auth/logout",
+            headers={"Origin": "https://evil.example", "Referer": "https://evil.example/"},
+        )
+        require_status(response, 403, "cross-site logout protection")
+        response = customer.post(f"{base_url}/api/auth/logout")
+        require_status(response, 200, "same-origin logout")
 
         step("all checks passed")
     finally:

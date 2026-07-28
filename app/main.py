@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from app.config import get_settings
 from app.database import init_db
-from app.security import SecurityHeadersMiddleware, validate_runtime_security
+from app.security import CSRFMiddleware, SecurityHeadersMiddleware, validate_runtime_security
 from app.routers import pages, products, cart, checkout, payments, contact, admin, auth, admin_pages, account
 
 logger = logging.getLogger(__name__)
@@ -49,6 +49,7 @@ app.add_middleware(
     allowed_hosts=settings.trusted_host_list,
 )
 
+app.add_middleware(CSRFMiddleware, settings=settings)
 app.add_middleware(SecurityHeadersMiddleware, settings=settings)
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")

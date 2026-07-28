@@ -11,9 +11,25 @@
 | full_name | VARCHAR(255) | |
 | phone | VARCHAR(50) | |
 | role | VARCHAR(20) DEFAULT 'customer' | customer / admin |
-| status | VARCHAR(20) DEFAULT 'active' | active / suspended / disabled |
+| status | VARCHAR(20) DEFAULT 'active' | active / pending_verification / suspended / disabled |
 | created_at | TIMESTAMP DEFAULT NOW() | |
 | updated_at | TIMESTAMP DEFAULT NOW() | |
+
+### email_otps
+| Column | Type | Notes |
+|--------|------|-------|
+| id | SERIAL PK | |
+| user_id | INT FK -> users.id ON DELETE CASCADE | Nullable for generic reset flows |
+| email | VARCHAR(255) NOT NULL | Indexed |
+| purpose | VARCHAR(50) NOT NULL | registration / password_reset |
+| code_hash | VARCHAR(255) NOT NULL | OTP values are never stored in plain text |
+| attempts | INT DEFAULT 0 | |
+| max_attempts | INT DEFAULT 5 | |
+| expires_at | TIMESTAMP NOT NULL | |
+| consumed_at | TIMESTAMP | Set after successful use or replacement |
+| created_at | TIMESTAMP DEFAULT NOW() | |
+
+Index: `idx_email_otps_lookup` on `email`, `purpose`, `consumed_at`
 
 ### product_categories
 | Column | Type | Notes |
@@ -177,6 +193,7 @@ products 1---* cart_items
 carts 1---* cart_items
 users 1---* carts
 users 1---* orders
+users 1---* email_otps
 orders 1---* order_items
 orders 1---* payments
 orders 1---* licenses

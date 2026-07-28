@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     cookie_samesite: str = "lax"
     allowed_hosts: str = "*"
     cors_origins: str = ""
+    csrf_protection_enabled: bool = True
+    csrf_exempt_paths: str = "/api/payments/webhook"
     rate_limit_enabled: bool = True
     max_upload_size_mb: int = 5
     resend_api_key: str = ""
@@ -40,6 +42,10 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return _split_csv(self.cors_origins) or [self.site_url]
+
+    @property
+    def csrf_exempt_path_list(self) -> list[str]:
+        return _split_csv(self.csrf_exempt_paths)
 
     @property
     def max_upload_size_bytes(self) -> int:

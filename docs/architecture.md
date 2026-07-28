@@ -18,7 +18,7 @@ FastAPI Server (single process)
 PostgreSQL Database
      |
      v
-Payment Provider (Stripe/PayPal)
+Payment Provider (Stripe/PayPal - future integration)
 ```
 
 ## Frontend
@@ -31,7 +31,8 @@ Payment Provider (Stripe/PayPal)
 - **Framework**: FastAPI (Python)
 - **ORM**: SQLAlchemy
 - **Templating**: Jinja2
-- **Payment**: Stripe or PayPal SDK integration
+- **Checkout**: Demo checkout creates confirmed orders without payment collection
+- **Payment**: Stripe or PayPal SDK integration is reserved for a later production step
 
 ## Database
 - **Engine**: PostgreSQL
@@ -43,12 +44,12 @@ Payment Provider (Stripe/PayPal)
 1. User browses `/products` — FastAPI renders `products.html` with product data
 2. User adds item to cart — JavaScript updates `localStorage`
 3. User goes to `/checkout` — JavaScript reads cart from `localStorage`, calls `POST /api/checkout`
-4. FastAPI creates pending order in PostgreSQL, creates payment session, returns payment URL
-5. User redirected to payment provider's hosted page
-6. User completes payment
-7. Payment provider sends webhook `POST /api/payments/webhook`
-8. FastAPI marks order as paid, saves payment record
-9. User sees success page
+4. FastAPI validates product IDs/prices from the database and creates a confirmed demo order
+5. FastAPI returns `/order/confirmation?order_id=...`
+6. JavaScript clears the browser cart and redirects to the confirmation page
+7. Admin order screens show the order as `confirmed`
+8. Revenue still counts only `paid` orders, so demo confirmations do not create fake revenue
+9. Future payment integration will add hosted payment sessions and validated webhooks
 
 ## Directory Structure
 ```

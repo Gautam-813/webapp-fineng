@@ -8,7 +8,7 @@
 - Create Jinja2 base template with Bootstrap
 - Apply Bootstrap theme (navy + teal palette)
 - Build static pages:
-  - Home page (hero, featured products, CTAs)
+  - Home page (algorithmic trading education, benefits, CTAs)
   - About Us page
   - Contact Us page (static, no backend yet)
 - Configure static file serving (CSS, JS, images)
@@ -57,8 +57,8 @@
 - Implement checkout form (name, email)
 - Create checkout API endpoint (`POST /api/checkout`):
   - Validate cart items against database prices
-  - Create pending order in PostgreSQL
-  - Return order ID and payment redirect URL
+  - Create confirmed demo order in PostgreSQL
+  - Return order ID and confirmation URL
 - Implement order and order_item models
 
 **Deliverables:**
@@ -72,7 +72,7 @@
 ## Sprint 4: Payments
 **Goal:** Integrate payment provider and complete purchase flow.
 
-- Integrate Stripe or PayPal SDK
+- Integrate Stripe or PayPal SDK when the site moves from demo checkout to paid checkout
 - Create payment session from checkout endpoint
 - Add webhook endpoint (`POST /api/payments/webhook`)
 - Handle payment success/cancelled redirects
@@ -126,8 +126,8 @@
 
 | Sprint | Focus |
 |--------|-------|
-| 6 | User authentication (register/login/logout) |
-| 7 | Customer dashboard (order history, downloads) |
-| 8 | Licensing portal (activate, revoke, check licenses) |
+| 6 | Production payment integration |
+| 7 | Licensing portal (downloads, license status, activation records) |
+| 8 | Google/Gmail OAuth login, if needed |
 | 9 | Analytics dashboard (sales, inquiries) |
 | 10 | Multi-language support |
