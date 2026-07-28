@@ -7,7 +7,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from app.config import get_settings
 from app.database import init_db
 from app.security import CSRFMiddleware, SecurityHeadersMiddleware, validate_runtime_security
-from app.routers import pages, products, cart, checkout, payments, contact, admin, auth, admin_pages, account
+from app.routers import pages, products, cart, checkout, payments, contact, admin, auth, admin_pages, account, licenses
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -63,6 +63,7 @@ app.include_router(contact.router)
 app.include_router(admin.router)
 app.include_router(auth.router)
 app.include_router(account.router)
+app.include_router(licenses.router)
 app.include_router(admin_pages.router)
 
 

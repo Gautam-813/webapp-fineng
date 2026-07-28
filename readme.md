@@ -10,6 +10,7 @@ FastAPI and Jinja2 web app for TheFinanceCompany, a fintech software business se
 - Customer portal: dashboard, order history, profile, support history, and custom project request history.
 - Admin panel: products, categories, customers, orders, inquiries, and project requests.
 - Authentication: email/password login, Gmail-only customer registration, emailed OTP verification, forgot password OTP reset, role-based admin access.
+- Licensing and delivery: admin-issued license keys, customer MT account binding, EA validation API, and protected product-file downloads.
 - Security controls: security headers, rate limiting, trusted hosts, secure-cookie settings, and same-origin CSRF protection for state-changing browser requests.
 
 ## Local Development
@@ -40,6 +41,9 @@ EMAIL_ENABLED=true
 RESEND_API_KEY=...
 EMAIL_FROM_LOGIN=login@thefinanceengine.com
 REGISTRATION_ALLOWED_DOMAINS=gmail.com
+LICENSE_CHECK_INTERVAL_SECONDS=28800
+LICENSE_OFFLINE_GRACE_SECONDS=86400
+LICENSE_ACCOUNT_CHANGE_COOLDOWN_DAYS=7
 SITE_URL=https://thefinancecompany.com
 ```
 
@@ -50,7 +54,7 @@ python -m compileall app -q
 python app/scripts/smoke_test.py --base-url http://127.0.0.1:8000
 ```
 
-The smoke test checks public pages, catalog/detail pages, cart behavior, demo checkout, customer portal, admin pages/APIs, and CSRF origin protection.
+The smoke test checks public pages, catalog/detail pages, cart behavior, demo checkout, customer portal, license APIs, protected product downloads, admin pages/APIs, and CSRF origin protection.
 
 To send a live OTP email test after `.env` is configured:
 
@@ -71,6 +75,6 @@ python app/scripts/send_test_email.py user@gmail.com --purpose password_reset
 ## Known Pending Work
 
 - Real payment provider integration and verified payment webhooks.
-- Licensing/download delivery integration from the licensing workstream.
+- Software-device licensing integration.
 - Production hosting, database backups, monitoring, and deployment runbook.
 - Final legal/business policy review.

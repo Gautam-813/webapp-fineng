@@ -37,6 +37,10 @@ class ProductOut(BaseModel):
     status: str
     platform: Optional[str] = None
     version: Optional[str] = None
+    download_url: Optional[str] = None
+    product_file_name: Optional[str] = None
+    product_file_size: Optional[int] = None
+    product_file_uploaded_at: Optional[datetime] = None
     thumbnail_url: Optional[str] = None
     images: list[ProductImageOut] = []
     featured: bool = False

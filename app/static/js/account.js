@@ -5,7 +5,8 @@ var accountState = {
         pageSize: 10,
         total: 0,
         pages: 1
-    }
+    },
+    licenses: []
 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -25,6 +26,7 @@ function initAccountPortal() {
             var page = shell.dataset.accountPage;
             if (page === 'dashboard') return initDashboard();
             if (page === 'orders') return initOrdersPage();
+            if (page === 'licenses') return initLicensesPage();
             if (page === 'profile') return initProfilePage();
             if (page === 'support') return initSupportPage();
             if (page === 'projects') return initProjectsPage();
@@ -101,6 +103,126 @@ function initOrdersPage() {
         if (accountState.orderPage.page < accountState.orderPage.pages) loadOrdersPage(accountState.orderPage.page + 1);
     });
     return loadOrdersPage(1);
+}
+
+function initLicensesPage() {
+    document.getElementById('refreshLicensesBtn')?.addEventListener('click', loadLicenses);
+    return loadLicenses();
+}
+
+function loadLicenses() {
+    var container = document.getElementById('accountLicensesList');
+    if (container) container.innerHTML = '<p class="text-muted small mb-0">Loading licenses...</p>';
+    return fetch('/api/account/licenses')
+        .then(function(r) {
+            if (!r.ok) throw new Error('Unable to load licenses');
+            return r.json();
+        })
+        .then(function(data) {
+            accountState.licenses = data.items || [];
+            renderLicenseStats(data.stats || {});
+            renderLicenses(accountState.licenses);
+        })
+        .catch(function(err) {
+            if (container) container.innerHTML = '<div class="alert alert-danger small mb-0">' + escapeAccountHtml(err.message) + '</div>';
+        });
+}
+
+function renderLicenseStats(stats) {
+    setText('licenseTotal', stats.total_licenses || 0);
+    setText('licenseActive', stats.active_licenses || 0);
+    setText('licenseAssigned', stats.assigned_accounts || 0);
+}
+
+function renderLicenses(items) {
+    var container = document.getElementById('accountLicensesList');
+    if (!container) return;
+    if (!items.length) {
+        container.innerHTML = accountEmptyState('bi-key', 'No licenses yet', 'After a license is issued, the key and MT account manager will appear here.', '/products', 'Browse Products');
+        return;
+    }
+    container.innerHTML = items.map(licenseRowHtml).join('');
+}
+
+function licenseRowHtml(item) {
+    var product = item.product || {};
+    var accountValue = item.allowed_mt_account_number || '';
+    var disabled = item.can_change_account ? '' : ' disabled';
+    var cooldown = item.can_change_account ? '' : '<div class="form-text text-warning">Next self-service change: ' + formatAccountDate(item.can_change_account_at) + '</div>';
+    var lastCheck = item.last_checked_at ? '<span>Last check: ' + formatAccountDate(item.last_checked_at) + '</span>' : '<span>No EA checks yet</span>';
+    var downloadAction = item.download_available
+        ? '<a class="btn btn-success btn-sm" href="' + escapeAccountHtml(item.download_url) + '"><i class="bi bi-download me-1"></i>Download File</a>'
+        : '<button type="button" class="btn btn-outline-secondary btn-sm" disabled><i class="bi bi-download me-1"></i>No File Yet</button>';
+    var fileMeta = item.product_file_name
+        ? 'File: ' + escapeAccountHtml(item.product_file_name) + ' (' + formatAccountFileSize(item.product_file_size) + ')'
+        : 'File pending';
+    return '<div class="account-order-row align-items-start">' +
+        '<div class="flex-grow-1">' +
+            '<div class="d-flex align-items-center gap-2 flex-wrap mb-2">' +
+                '<strong>' + escapeAccountHtml(product.name || 'License') + '</strong>' + statusBadge(item.status) +
+            '</div>' +
+            '<div class="license-key-box mb-3">' +
+                '<code>' + escapeAccountHtml(item.license_key) + '</code>' +
+                '<button type="button" class="btn btn-sm btn-outline-secondary" onclick="copyLicenseKey(' + item.id + ')"><i class="bi bi-clipboard me-1"></i>Copy</button>' +
+            '</div>' +
+            '<div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">' +
+                '<span class="text-muted small">' + fileMeta + '</span>' +
+                downloadAction +
+            '</div>' +
+            '<div class="row g-2 align-items-end">' +
+                '<div class="col-md-7">' +
+                    '<label class="form-label small fw-semibold" for="mtAccount' + item.id + '">Allowed MT account number</label>' +
+                    '<input type="text" class="form-control" id="mtAccount' + item.id + '" value="' + escapeAccountHtml(accountValue) + '" placeholder="Example: 12345678"' + disabled + '>' +
+                    cooldown +
+                '</div>' +
+                '<div class="col-md-5">' +
+                    '<button type="button" class="btn btn-primary w-100" onclick="saveMtAccount(' + item.id + ')"' + disabled + '><i class="bi bi-check2-circle me-1"></i>Save Account</button>' +
+                '</div>' +
+            '</div>' +
+            '<div class="d-flex gap-3 flex-wrap text-muted small mt-3">' +
+                '<span>Product code: ' + escapeAccountHtml(product.slug || 'unknown') + '</span>' +
+                '<span>Expires: ' + formatAccountDate(item.expires_at) + '</span>' +
+                lastCheck +
+            '</div>' +
+            (item.last_check_message ? '<p class="text-muted small mt-2 mb-0">' + escapeAccountHtml(item.last_check_message) + '</p>' : '') +
+        '</div>' +
+    '</div>';
+}
+
+function copyLicenseKey(id) {
+    var license = accountState.licenses.find(function(item) { return item.id === id; });
+    if (!license) return;
+    navigator.clipboard.writeText(license.license_key).then(function() {
+        showAlert('License key copied.', 'success');
+    }).catch(function() {
+        showAlert('Copy failed. Select and copy the key manually.', 'warning');
+    });
+}
+
+function saveMtAccount(id) {
+    var input = document.getElementById('mtAccount' + id);
+    if (!input) return;
+    var value = input.value.trim();
+    if (!value) {
+        showAlert('Enter the MT account number first.', 'warning');
+        return;
+    }
+    fetch('/api/account/licenses/' + id + '/mt-account', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mt_account_number: value })
+    })
+    .then(function(r) {
+        if (!r.ok) return r.json().then(function(err) { throw new Error(err.detail || 'Unable to update MT account'); });
+        return r.json();
+    })
+    .then(function() {
+        showAlert('MT account updated. The EA will use this account on its next validation.', 'success');
+        return loadLicenses();
+    })
+    .catch(function(err) {
+        showAlert('Error: ' + err.message, 'danger');
+    });
 }
 
 function loadOrdersPage(page) {
@@ -458,6 +580,13 @@ function setText(id, value) {
 
 function formatAccountMoney(value) {
     return '$' + parseFloat(value || 0).toFixed(2);
+}
+
+function formatAccountFileSize(bytes) {
+    var size = Number(bytes || 0);
+    if (!size) return '0 KB';
+    if (size < 1024 * 1024) return (size / 1024).toFixed(1) + ' KB';
+    return (size / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
 function formatAccountDate(value) {

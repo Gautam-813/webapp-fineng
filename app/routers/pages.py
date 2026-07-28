@@ -106,6 +106,11 @@ def account_orders_page(request: Request):
     return templates.TemplateResponse("account_orders.html", {"request": request, "account_active": "orders"})
 
 
+@router.get("/account/licenses")
+def account_licenses_page(request: Request):
+    return templates.TemplateResponse("account_licenses.html", {"request": request, "account_active": "licenses"})
+
+
 @router.get("/account/profile")
 def account_profile_page(request: Request):
     return templates.TemplateResponse("account_profile.html", {"request": request, "account_active": "profile"})

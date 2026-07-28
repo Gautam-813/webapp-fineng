@@ -74,6 +74,10 @@ class Product(Base):
     version = Column(String(50))
     platform = Column(String(50))
     download_url = Column(String(500))
+    product_file_path = Column(String(500))
+    product_file_name = Column(String(255))
+    product_file_size = Column(Integer)
+    product_file_uploaded_at = Column(DateTime)
     thumbnail_url = Column(String(500))
     featured = Column(Boolean, default=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
@@ -199,20 +203,54 @@ class License(Base):
     __tablename__ = "licenses"
 
     id = Column(Integer, primary_key=True, index=True)
-    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     license_key = Column(String(255), unique=True, nullable=False)
     status = Column(String(20), default="active")
+    activation_type = Column(String(30), default="ea_account")
+    allowed_mt_account_number = Column(String(64), nullable=True)
+    allowed_broker_server = Column(String(255), nullable=True)
+    device_fingerprint = Column(String(255), nullable=True)
+    activated_at = Column(DateTime, nullable=True)
     expires_at = Column(DateTime, nullable=True)
+    mt_account_updated_at = Column(DateTime, nullable=True)
+    last_checked_at = Column(DateTime, nullable=True)
+    last_check_status = Column(String(30), nullable=True)
+    last_check_message = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     order = relationship("Order", back_populates="licenses")
     product = relationship("Product", back_populates="licenses")
     user = relationship("User", back_populates="licenses")
+    checks = relationship("LicenseCheck", back_populates="license", cascade="all, delete-orphan")
 
     __table_args__ = (
         UniqueConstraint("license_key", name="uq_license_key"),
+        Index("idx_licenses_status", "status"),
+        Index("idx_licenses_user_product", "user_id", "product_id"),
+    )
+
+
+class LicenseCheck(Base):
+    __tablename__ = "license_checks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    license_id = Column(Integer, ForeignKey("licenses.id", ondelete="SET NULL"), nullable=True)
+    product_code = Column(String(255), nullable=True)
+    mt_account_number = Column(String(64), nullable=True)
+    platform = Column(String(50), nullable=True)
+    client_version = Column(String(50), nullable=True)
+    result = Column(String(30), nullable=False)
+    message = Column(String(255), nullable=True)
+    ip_address = Column(String(64), nullable=True)
+    checked_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    license = relationship("License", back_populates="checks")
+
+    __table_args__ = (
+        Index("idx_license_checks_lookup", "license_id", "checked_at"),
     )
 
 

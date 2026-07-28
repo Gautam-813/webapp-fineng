@@ -6,7 +6,7 @@
     <div>
         <span class="category-pill small mb-2 px-3 py-2">{% if product_id %}Edit Catalog Item{% else %}Create Catalog Item{% endif %}</span>
         <h4 class="fw-bold mb-1">{% if product_id %}Edit Product{% else %}New Product{% endif %}</h4>
-        <p class="text-muted mb-0">Manage product copy, pricing, publishing status, thumbnails, and proof screenshots.</p>
+        <p class="text-muted mb-0">Manage product copy, pricing, publishing status, thumbnails, product files, and proof screenshots.</p>
     </div>
     <div class="d-flex gap-2">
         {% if product_id %}
@@ -136,6 +136,27 @@
             <div class="form-text">Save the product first, then upload a main image.</div>
         </div>
 
+        <div class="admin-panel mb-4">
+            <div class="admin-section-heading compact">
+                <div class="icon-tile"><i class="bi bi-file-earmark-lock"></i></div>
+                <div>
+                    <h5 class="fw-bold mb-1">Protected Product File</h5>
+                    <p class="text-muted small mb-0">EA/software file delivered only to licensed customers.</p>
+                </div>
+            </div>
+            <div class="admin-detail-box mb-3" id="productFileSummary">
+                <span class="text-muted small">Current file</span>
+                <strong>No file uploaded</strong>
+                <span class="small text-muted">Upload after saving the product.</span>
+            </div>
+            <label class="form-label small fw-semibold">Upload Product File</label>
+            <input type="file" class="form-control" id="product_file" accept=".ex4,.ex5,.mq4,.mq5,.zip,.rar,.7z,.pdf,.txt,.set">
+            <div class="form-text">Allowed: EX4, EX5, MQ4, MQ5, ZIP, RAR, 7Z, PDF, TXT, SET. Stored outside public static files.</div>
+            <button type="button" class="btn btn-outline-danger btn-sm mt-3 d-none" id="deleteProductFileBtn">
+                <i class="bi bi-trash me-1"></i>Remove Product File
+            </button>
+        </div>
+
         <div class="admin-panel" id="mediaCard">
             <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
                 <div>
@@ -180,6 +201,7 @@
 var productId = {{ product_id or 'null' }};
 var currentImages = [];
 var currentSlug = '';
+var currentProductFile = null;
 
 function escapeAdminHtml(value) {
     return String(value || '').replace(/[&<>"']/g, function(ch) {
@@ -217,6 +239,33 @@ function updatePublicLink() {
     if (link && currentSlug) link.href = '/products/' + encodeURIComponent(currentSlug);
 }
 
+function formatFileSize(bytes) {
+    var size = Number(bytes || 0);
+    if (!size) return '0 KB';
+    if (size < 1024 * 1024) return (size / 1024).toFixed(1) + ' KB';
+    return (size / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function updateProductFileSummary(product) {
+    var box = document.getElementById('productFileSummary');
+    var deleteBtn = document.getElementById('deleteProductFileBtn');
+    currentProductFile = product && product.product_file_name ? product : null;
+    if (!box || !deleteBtn) return;
+    if (currentProductFile) {
+        box.innerHTML =
+            '<span class="text-muted small">Current file</span>' +
+            '<strong>' + escapeAdminHtml(currentProductFile.product_file_name) + '</strong>' +
+            '<span class="small text-muted">' + formatFileSize(currentProductFile.product_file_size) + ' uploaded ' + (currentProductFile.product_file_uploaded_at ? new Date(currentProductFile.product_file_uploaded_at).toLocaleString() : '') + '</span>';
+        deleteBtn.classList.remove('d-none');
+    } else {
+        box.innerHTML =
+            '<span class="text-muted small">Current file</span>' +
+            '<strong>No file uploaded</strong>' +
+            '<span class="small text-muted">' + (productId ? 'Upload a protected EA/software file.' : 'Upload after saving the product.') + '</span>';
+        deleteBtn.classList.add('d-none');
+    }
+}
+
 function loadCategories() {
     return fetch('/api/admin/categories').then(function(r) { return r.json(); }).then(function(cats) {
         var sel = document.getElementById('category_id');
@@ -245,6 +294,7 @@ function loadProduct(id) {
         currentSlug = p.slug || '';
         currentImages = p.images || [];
         updateThumbnailPreview(p.thumbnail_url || '');
+        updateProductFileSummary(p);
         updatePublicLink();
         renderGalleryList();
     });
@@ -256,6 +306,8 @@ function setMediaEnabled() {
     document.getElementById('mediaUploadControls').style.display = enabled ? 'block' : 'none';
     document.getElementById('refreshImagesBtn').disabled = !enabled;
     document.getElementById('thumbnail_file').disabled = !enabled;
+    document.getElementById('product_file').disabled = !enabled;
+    updateProductFileSummary(currentProductFile);
 }
 
 function renderGalleryList() {
@@ -314,6 +366,44 @@ function uploadThumbnail() {
             updateThumbnailPreview(data.thumbnail_url || '');
             input.value = '';
             showAlert('Thumbnail uploaded successfully.', 'success');
+        })
+        .catch(function(err) { showAlert('Error: ' + err.message, 'danger'); });
+}
+
+function uploadProductFile() {
+    if (!productId) return;
+    var input = document.getElementById('product_file');
+    if (!input.files.length) return;
+    var formData = new FormData();
+    formData.append('file', input.files[0]);
+    fetch('/api/admin/products/' + productId + '/file', {
+        method: 'POST',
+        body: formData
+    })
+        .then(function(r) {
+            if (!r.ok) return r.json().then(function(err) { throw new Error(err.detail || 'Upload failed'); });
+            return r.json();
+        })
+        .then(function(data) {
+            input.value = '';
+            updateProductFileSummary(data);
+            showAlert('Protected product file uploaded successfully.', 'success');
+            return productId ? loadProduct(productId) : null;
+        })
+        .catch(function(err) { showAlert('Error: ' + err.message, 'danger'); });
+}
+
+function deleteProductFile() {
+    if (!productId || !confirm('Remove this protected product file? Licensed customers will no longer be able to download it.')) return;
+    fetch('/api/admin/products/' + productId + '/file', { method: 'DELETE' })
+        .then(function(r) {
+            if (!r.ok && r.status !== 204) return r.json().then(function(err) { throw new Error(err.detail || 'Delete failed'); });
+        })
+        .then(function() {
+            currentProductFile = null;
+            updateProductFileSummary(null);
+            showAlert('Protected product file removed.', 'success');
+            return productId ? loadProduct(productId) : null;
         })
         .catch(function(err) { showAlert('Error: ' + err.message, 'danger'); });
 }
@@ -395,6 +485,8 @@ document.addEventListener('DOMContentLoaded', function() {
     autoSlug();
     setMediaEnabled();
     document.getElementById('thumbnail_file').addEventListener('change', uploadThumbnail);
+    document.getElementById('product_file').addEventListener('change', uploadProductFile);
+    document.getElementById('deleteProductFileBtn').addEventListener('click', deleteProductFile);
     document.getElementById('thumbnail_url').addEventListener('input', function() { updateThumbnailPreview(this.value.trim()); });
     document.getElementById('uploadGalleryBtn').addEventListener('click', uploadGalleryImage);
     document.getElementById('refreshImagesBtn').addEventListener('click', refreshProductImages);
@@ -446,7 +538,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentSlug = savedProduct.slug || data.slug;
                 updatePublicLink();
                 updateThumbnailPreview(data.thumbnail_url);
-                success.textContent = wasNew ? 'Product saved. You can now upload images.' : 'Product saved successfully.';
+                success.textContent = wasNew ? 'Product saved. You can now upload images and protected files.' : 'Product saved successfully.';
                 success.classList.remove('d-none');
                 return refreshProductImages();
             })

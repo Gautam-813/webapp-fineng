@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Licenses - TheFinanceCompany{% endblock %}
+{% block content %}
+
+<section class="account-hero py-5">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item"><a href="/account" class="text-decoration-none">Account</a></li>
+                <li class="breadcrumb-item active">Licenses</li>
+            </ol>
+        </nav>
+        <span class="category-pill small mb-3 px-3 py-2">EA Account Manager</span>
+        <h1 class="display-6 fw-bold mb-2">License keys and MT accounts</h1>
+        <p class="lead text-muted mb-0">Enter the license key in your EA settings, then bind the MT account number here where that EA is allowed to run.</p>
+    </div>
+</section>
+
+<section class="pb-5 account-shell" data-account-page="licenses">
+    <div class="container">
+        {% include 'partials/account_nav.html' %}
+
+        <div class="row g-3 mb-4">
+            <div class="col-sm-4">
+                <div class="account-stat-card">
+                    <span class="text-muted small">Licenses</span>
+                    <strong id="licenseTotal">0</strong>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="account-stat-card">
+                    <span class="text-muted small">Active</span>
+                    <strong class="text-success" id="licenseActive">0</strong>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="account-stat-card">
+                    <span class="text-muted small">Assigned MT Accounts</span>
+                    <strong id="licenseAssigned">0</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="account-panel mb-4">
+            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+                <div>
+                    <h2 class="h5 fw-bold mb-1">EA Licenses</h2>
+                    <p class="text-muted small mb-0">One license can run on one MT account number at a time. Changing the account moves permission to the new account.</p>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="refreshLicensesBtn">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                </button>
+            </div>
+            <div id="accountLicensesList">
+                <p class="text-muted small mb-0">Loading licenses...</p>
+            </div>
+        </div>
+
+        <div class="account-panel account-dark-panel">
+            <div>
+                <span class="small text-uppercase">EA setup rule</span>
+                <h2 class="h5 fw-bold mb-2">License key in EA, account number in this portal.</h2>
+                <p class="mb-0">The EA validates on startup and then every 8 hours. If the key, product, status, expiry, or MT account does not match, the EA will stop.</p>
+            </div>
+            <a href="/account/support" class="btn btn-success"><i class="bi bi-life-preserver me-1"></i>Need Help?</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/account.js?v=20260728-licenses"></script>
+{% endblock %}

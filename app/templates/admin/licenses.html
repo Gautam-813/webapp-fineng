@@ -1,0 +1,369 @@
+{% extends 'admin/base.html' %}
+{% block title %}Licenses - Admin{% endblock %}
+{% block content %}
+
+<div class="admin-page-header mb-4">
+    <div>
+        <span class="category-pill small mb-2 px-3 py-2">License Control</span>
+        <h4 class="fw-bold mb-1">Licenses</h4>
+        <p class="text-muted mb-0">Issue EA license keys, bind MT account numbers, monitor validation checks, and revoke access.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <button type="button" class="btn btn-outline-primary" id="refreshLicensesBtn">
+            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+        </button>
+        <button type="button" class="btn btn-primary" id="newLicenseBtn">
+            <i class="bi bi-key me-1"></i>New License
+        </button>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card"><span class="text-muted small">Total Licenses</span><strong id="statLicenseTotal">0</strong></div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card"><span class="text-muted small">Active</span><strong class="text-success" id="statLicenseActive">0</strong></div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card"><span class="text-muted small">Assigned Accounts</span><strong id="statAssignedAccounts">0</strong></div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat-card"><span class="text-muted small">Checked Licenses</span><strong id="statRecentChecks">0</strong></div>
+    </div>
+</div>
+
+<div class="admin-panel">
+    <div class="admin-toolbar">
+        <div class="input-group admin-search">
+            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+            <input type="search" class="form-control" id="licenseSearch" placeholder="Search key, customer, product, or MT account">
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <select class="form-select admin-status-filter" id="licenseStatusFilter">
+                <option value="">All statuses</option>
+                <option value="active">Active</option>
+                <option value="expired">Expired</option>
+                <option value="revoked">Revoked</option>
+                <option value="suspended">Suspended</option>
+            </select>
+            <select class="form-select admin-status-filter" id="pageSizeSelect">
+                <option value="10">10 / page</option>
+                <option value="20" selected>20 / page</option>
+                <option value="50">50 / page</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table admin-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="small">License</th>
+                    <th class="small">Customer</th>
+                    <th class="small">Product</th>
+                    <th class="small">MT Account</th>
+                    <th class="small">Status</th>
+                    <th class="small">Last Check</th>
+                    <th class="small text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="licensesBody">
+                <tr><td colspan="7" class="text-muted text-center small py-4">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="admin-pagination pt-3 mt-3 border-top">
+        <div class="text-muted small" id="licensePageSummary">Showing 0 licenses</div>
+        <div class="btn-group btn-group-sm" role="group" aria-label="License pagination">
+            <button type="button" class="btn btn-outline-secondary" id="prevPageBtn"><i class="bi bi-chevron-left"></i></button>
+            <button type="button" class="btn btn-outline-secondary disabled" id="currentPageBtn">Page 1 of 1</button>
+            <button type="button" class="btn btn-outline-secondary" id="nextPageBtn"><i class="bi bi-chevron-right"></i></button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="licenseModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <form id="licenseForm">
+                <div class="modal-header border-0">
+                    <div>
+                        <h5 class="modal-title fw-bold mb-1" id="licenseModalTitle">New License</h5>
+                        <p class="text-muted small mb-0">License key is used inside the EA input. MT account is managed in the portal or by admin override.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pt-0">
+                    <input type="hidden" id="licenseId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Customer</label>
+                            <select class="form-select" id="licenseUserId" required></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Product</label>
+                            <select class="form-select" id="licenseProductId" required></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">License Key</label>
+                            <input type="text" class="form-control" id="licenseKey" placeholder="Leave blank to auto-generate">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Status</label>
+                            <select class="form-select" id="licenseStatus">
+                                <option value="active">Active</option>
+                                <option value="expired">Expired</option>
+                                <option value="revoked">Revoked</option>
+                                <option value="suspended">Suspended</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Activation</label>
+                            <select class="form-select" id="licenseActivationType">
+                                <option value="ea_account">EA / MT Account</option>
+                                <option value="device">Software Device</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Allowed MT Account</label>
+                            <input type="text" class="form-control" id="licenseMtAccount" placeholder="Example: 12345678">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Broker Server</label>
+                            <input type="text" class="form-control" id="licenseBrokerServer" placeholder="Optional">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Expires At</label>
+                            <input type="datetime-local" class="form-control" id="licenseExpiresAt">
+                        </div>
+                        <div class="col-12">
+                            <div class="alert alert-info small mb-0">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Customer self-service MT account changes use cooldown rules. Admin edits here override immediately.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 d-none" id="licenseChecksBox">
+                        <h6 class="fw-bold mb-3">Recent Validation Checks</h6>
+                        <div id="licenseChecksList" class="small text-muted">No checks yet.</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-danger me-auto d-none" id="deleteLicenseBtn">
+                        <i class="bi bi-trash me-1"></i>Delete
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveLicenseBtn">
+                        <i class="bi bi-check2-circle me-1"></i>Save License
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+var allLicenses = [];
+var licenseModal = null;
+var licensePage = {page: 1, pageSize: 20, total: 0, pages: 1};
+var searchTimer = null;
+
+function escapeAdminHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function(ch) {
+        return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[ch];
+    });
+}
+
+function formatDate(value) {
+    return value ? new Date(value).toLocaleString() : 'Never';
+}
+
+function statusBadge(status) {
+    var clean = status || 'active';
+    var badgeClass = clean === 'active' ? 'success' : clean === 'expired' ? 'warning' : clean === 'revoked' ? 'danger' : 'secondary';
+    return '<span class="badge bg-' + badgeClass + ' bg-opacity-10 text-' + badgeClass + ' small">' + escapeAdminHtml(clean) + '</span>';
+}
+
+function updateStats(stats) {
+    document.getElementById('statLicenseTotal').textContent = stats.total_licenses || 0;
+    document.getElementById('statLicenseActive').textContent = stats.active_licenses || 0;
+    document.getElementById('statAssignedAccounts').textContent = stats.assigned_accounts || 0;
+    document.getElementById('statRecentChecks').textContent = stats.recent_checks || 0;
+}
+
+function currentParams(page) {
+    var params = new URLSearchParams({
+        page: page || licensePage.page,
+        page_size: document.getElementById('pageSizeSelect').value || '20'
+    });
+    var status = document.getElementById('licenseStatusFilter').value;
+    var search = document.getElementById('licenseSearch').value.trim();
+    if (status) params.set('status', status);
+    if (search) params.set('search', search);
+    return params;
+}
+
+function renderLicenses() {
+    var tbody = document.getElementById('licensesBody');
+    if (!allLicenses.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center small py-4">No licenses match the current filters.</td></tr>';
+        updatePagination();
+        return;
+    }
+    tbody.innerHTML = allLicenses.map(function(item) {
+        return '<tr>' +
+            '<td><div class="fw-semibold small">' + escapeAdminHtml(item.license_key) + '</div><div class="text-muted small">' + escapeAdminHtml(item.activation_type || 'ea_account') + '</div></td>' +
+            '<td><div class="fw-semibold small">' + escapeAdminHtml(item.user.full_name || 'Customer') + '</div><div class="text-muted small">' + escapeAdminHtml(item.user.email || '') + '</div></td>' +
+            '<td><div class="fw-semibold small">' + escapeAdminHtml(item.product.name || '') + '</div><div class="text-muted small">' + escapeAdminHtml(item.product.slug || '') + '</div></td>' +
+            '<td class="small">' + escapeAdminHtml(item.allowed_mt_account_number || 'Not assigned') + '</td>' +
+            '<td>' + statusBadge(item.status) + '</td>' +
+            '<td><div class="small">' + formatDate(item.last_checked_at) + '</div><div class="text-muted small">' + escapeAdminHtml(item.last_check_status || '') + '</div></td>' +
+            '<td class="text-end"><button type="button" class="btn btn-sm btn-outline-primary" onclick="openLicenseModal(' + item.id + ')"><i class="bi bi-pencil me-1"></i>Edit</button></td>' +
+            '</tr>';
+    }).join('');
+    updatePagination();
+}
+
+function updatePagination() {
+    var start = licensePage.total ? ((licensePage.page - 1) * licensePage.pageSize) + 1 : 0;
+    var end = Math.min(licensePage.page * licensePage.pageSize, licensePage.total);
+    document.getElementById('licensePageSummary').textContent = 'Showing ' + start + '-' + end + ' of ' + licensePage.total + ' licenses';
+    document.getElementById('currentPageBtn').textContent = 'Page ' + licensePage.page + ' of ' + licensePage.pages;
+    document.getElementById('prevPageBtn').disabled = licensePage.page <= 1;
+    document.getElementById('nextPageBtn').disabled = licensePage.page >= licensePage.pages;
+}
+
+function loadLicenses(page) {
+    document.getElementById('licensesBody').innerHTML = '<tr><td colspan="7" class="text-muted text-center small py-4">Loading licenses...</td></tr>';
+    return fetch('/api/admin/licenses?' + currentParams(page || licensePage.page).toString())
+        .then(function(r) { if (!r.ok) throw new Error('Unable to load licenses'); return r.json(); })
+        .then(function(data) {
+            allLicenses = data.items || [];
+            licensePage.page = data.page || 1;
+            licensePage.pageSize = data.page_size || 20;
+            licensePage.total = data.total || 0;
+            licensePage.pages = data.pages || 1;
+            updateStats(data.stats || {});
+            renderLicenses();
+        })
+        .catch(function(err) {
+            document.getElementById('licensesBody').innerHTML = '<tr><td colspan="7" class="text-danger text-center small py-4">' + escapeAdminHtml(err.message) + '</td></tr>';
+        });
+}
+
+function loadSelectOptions() {
+    return Promise.all([
+        fetch('/api/admin/customers?role=customer&page_size=100').then(function(r) { return r.json(); }),
+        fetch('/api/admin/products?page_size=100').then(function(r) { return r.json(); })
+    ]).then(function(results) {
+        document.getElementById('licenseUserId').innerHTML = (results[0].items || []).map(function(user) {
+            return '<option value="' + user.id + '">' + escapeAdminHtml((user.full_name || user.email) + ' - ' + user.email) + '</option>';
+        }).join('');
+        document.getElementById('licenseProductId').innerHTML = (results[1].items || []).map(function(product) {
+            return '<option value="' + product.id + '">' + escapeAdminHtml(product.name + ' - ' + product.slug) + '</option>';
+        }).join('');
+    });
+}
+
+function toLocalDateTimeInput(value) {
+    if (!value) return '';
+    var date = new Date(value);
+    return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+}
+
+function openLicenseModal(id) {
+    loadSelectOptions().then(function() {
+        var item = id ? allLicenses.find(function(row) { return row.id === id; }) : null;
+        document.getElementById('licenseId').value = item ? item.id : '';
+        document.getElementById('licenseModalTitle').textContent = item ? 'Edit License' : 'New License';
+        document.getElementById('licenseUserId').value = item ? item.user.id : '';
+        document.getElementById('licenseProductId').value = item ? item.product.id : '';
+        document.getElementById('licenseKey').value = item ? item.license_key : '';
+        document.getElementById('licenseStatus').value = item ? item.status : 'active';
+        document.getElementById('licenseActivationType').value = item ? item.activation_type : 'ea_account';
+        document.getElementById('licenseMtAccount').value = item ? (item.allowed_mt_account_number || '') : '';
+        document.getElementById('licenseBrokerServer').value = item ? (item.allowed_broker_server || '') : '';
+        document.getElementById('licenseExpiresAt').value = item ? toLocalDateTimeInput(item.expires_at) : '';
+        document.getElementById('deleteLicenseBtn').classList.toggle('d-none', !item);
+        document.getElementById('licenseChecksBox').classList.toggle('d-none', !item);
+        if (item) loadLicenseChecks(item.id);
+        licenseModal.show();
+    });
+}
+
+function loadLicenseChecks(id) {
+    document.getElementById('licenseChecksList').innerHTML = 'Loading checks...';
+    fetch('/api/admin/licenses/' + id)
+        .then(function(r) { return r.json(); })
+        .then(function(detail) {
+            var checks = detail.checks || [];
+            document.getElementById('licenseChecksList').innerHTML = checks.length ? checks.map(function(check) {
+                return '<div class="admin-list-row"><div><strong>' + escapeAdminHtml(check.result) + '</strong><div class="text-muted">' + escapeAdminHtml(check.message || '') + '</div></div><div class="text-end text-muted">' + escapeAdminHtml(check.mt_account_number || '') + '<br>' + formatDate(check.checked_at) + '</div></div>';
+            }).join('') : 'No checks yet.';
+        });
+}
+
+function saveLicense(event) {
+    event.preventDefault();
+    var id = document.getElementById('licenseId').value;
+    var expires = document.getElementById('licenseExpiresAt').value;
+    var payload = {
+        user_id: document.getElementById('licenseUserId').value,
+        product_id: document.getElementById('licenseProductId').value,
+        license_key: document.getElementById('licenseKey').value.trim(),
+        status: document.getElementById('licenseStatus').value,
+        activation_type: document.getElementById('licenseActivationType').value,
+        allowed_mt_account_number: document.getElementById('licenseMtAccount').value.trim(),
+        allowed_broker_server: document.getElementById('licenseBrokerServer').value.trim(),
+        expires_at: expires ? new Date(expires).toISOString() : null
+    };
+    fetch(id ? '/api/admin/licenses/' + id : '/api/admin/licenses', {
+        method: id ? 'PUT' : 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+    })
+    .then(function(r) {
+        if (!r.ok) return r.json().then(function(err) { throw new Error(err.detail || 'Unable to save license'); });
+        return r.json();
+    })
+    .then(function() {
+        licenseModal.hide();
+        return loadLicenses(licensePage.page);
+    })
+    .catch(function(err) { alert(err.message); });
+}
+
+function deleteLicense() {
+    var id = document.getElementById('licenseId').value;
+    if (!id || !confirm('Delete this license? Revoking is safer for real customer history.')) return;
+    fetch('/api/admin/licenses/' + id, {method: 'DELETE'})
+        .then(function(r) {
+            if (!r.ok && r.status !== 204) return r.json().then(function(err) { throw new Error(err.detail || 'Unable to delete license'); });
+            licenseModal.hide();
+            return loadLicenses(licensePage.page);
+        })
+        .catch(function(err) { alert(err.message); });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    licenseModal = new bootstrap.Modal(document.getElementById('licenseModal'));
+    document.getElementById('newLicenseBtn').addEventListener('click', function() { openLicenseModal(null); });
+    document.getElementById('refreshLicensesBtn').addEventListener('click', function() { loadLicenses(licensePage.page); });
+    document.getElementById('licenseForm').addEventListener('submit', saveLicense);
+    document.getElementById('deleteLicenseBtn').addEventListener('click', deleteLicense);
+    document.getElementById('licenseStatusFilter').addEventListener('change', function() { loadLicenses(1); });
+    document.getElementById('pageSizeSelect').addEventListener('change', function() { loadLicenses(1); });
+    document.getElementById('prevPageBtn').addEventListener('click', function() { if (licensePage.page > 1) loadLicenses(licensePage.page - 1); });
+    document.getElementById('nextPageBtn').addEventListener('click', function() { if (licensePage.page < licensePage.pages) loadLicenses(licensePage.page + 1); });
+    document.getElementById('licenseSearch').addEventListener('input', function() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function() { loadLicenses(1); }, 250);
+    });
+    loadLicenses(1);
+});
+</script>
+{% endblock %}

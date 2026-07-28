@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     csrf_exempt_paths: str = "/api/payments/webhook"
     rate_limit_enabled: bool = True
     max_upload_size_mb: int = 5
+    max_product_file_size_mb: int = 100
     resend_api_key: str = ""
     email_from_login: str = "login@thefinanceengine.com"
     email_enabled: bool = False
@@ -24,6 +25,9 @@ class Settings(BaseSettings):
     otp_resend_cooldown_seconds: int = 60
     otp_max_attempts: int = 5
     registration_allowed_domains: str = "gmail.com"
+    license_check_interval_seconds: int = 28800
+    license_offline_grace_seconds: int = 86400
+    license_account_change_cooldown_days: int = 7
 
     stripe_secret_key: str = ""
     stripe_publishable_key: str = ""
@@ -50,6 +54,10 @@ class Settings(BaseSettings):
     @property
     def max_upload_size_bytes(self) -> int:
         return max(self.max_upload_size_mb, 1) * 1024 * 1024
+
+    @property
+    def max_product_file_size_bytes(self) -> int:
+        return max(self.max_product_file_size_mb, 1) * 1024 * 1024
 
     @property
     def is_production(self) -> bool:

@@ -1,4 +1,7 @@
 import uuid
+import secrets
+import re
+from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
@@ -13,14 +16,29 @@ from app.routers.auth import pwd_context, require_admin
 router = APIRouter(prefix="/api/admin", tags=["admin"], dependencies=[Depends(require_admin)])
 
 UPLOAD_DIR = Path("app/static/uploads/products")
+PRODUCT_FILE_DIR = Path("storage/product_files")
 ALLOWED_IMAGE_TYPES = {
     "image/jpeg": ".jpg",
     "image/png": ".png",
     "image/webp": ".webp",
     "image/gif": ".gif",
 }
+ALLOWED_PRODUCT_FILE_EXTENSIONS = {
+    ".ex4",
+    ".ex5",
+    ".mq4",
+    ".mq5",
+    ".zip",
+    ".rar",
+    ".7z",
+    ".pdf",
+    ".txt",
+    ".set",
+}
 VALID_USER_ROLES = {"customer", "admin"}
 VALID_USER_STATUSES = {"active", "suspended", "disabled"}
+VALID_LICENSE_STATUSES = {"active", "expired", "revoked", "suspended"}
+VALID_LICENSE_ACTIVATION_TYPES = {"ea_account", "device"}
 
 
 def _save_product_upload(file: UploadFile) -> str:
@@ -58,6 +76,80 @@ def _save_product_upload(file: UploadFile) -> str:
         raise HTTPException(status_code=400, detail="Uploaded image is empty")
 
     return f"/static/uploads/products/{filename}"
+
+
+def _safe_filename(filename: str) -> str:
+    name = Path(filename or "product-file").name
+    stem = Path(name).stem or "product-file"
+    suffix = Path(name).suffix.lower()
+    safe_stem = re.sub(r"[^A-Za-z0-9_.-]+", "-", stem).strip(".-") or "product-file"
+    return f"{safe_stem[:80]}{suffix}"
+
+
+def _product_file_storage_path(product_id: int, filename: str) -> Path:
+    safe_name = _safe_filename(filename)
+    suffix = Path(safe_name).suffix.lower()
+    if suffix not in ALLOWED_PRODUCT_FILE_EXTENSIONS:
+        allowed = ", ".join(sorted(ALLOWED_PRODUCT_FILE_EXTENSIONS))
+        raise HTTPException(status_code=400, detail=f"Unsupported product file type. Allowed: {allowed}")
+    return PRODUCT_FILE_DIR / str(product_id) / f"{uuid.uuid4().hex}_{safe_name}"
+
+
+def _delete_existing_product_file(product: Product) -> None:
+    if not product.product_file_path:
+        return
+    path = Path(product.product_file_path)
+    root = PRODUCT_FILE_DIR.resolve()
+    try:
+        resolved = path.resolve()
+    except OSError:
+        return
+    if root in resolved.parents and resolved.exists() and resolved.is_file():
+        resolved.unlink()
+
+
+def _save_product_file_upload(product: Product, file: UploadFile) -> dict:
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Product file name is required")
+    destination = _product_file_storage_path(product.id, file.filename)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+
+    max_bytes = get_settings().max_product_file_size_bytes
+    total = 0
+    try:
+        with destination.open("wb") as buffer:
+            while True:
+                chunk = file.file.read(1024 * 1024)
+                if not chunk:
+                    break
+                total += len(chunk)
+                if total > max_bytes:
+                    raise HTTPException(
+                        status_code=413,
+                        detail=f"Product file upload exceeds the {get_settings().max_product_file_size_mb} MB limit",
+                    )
+                buffer.write(chunk)
+    except HTTPException:
+        if destination.exists():
+            destination.unlink()
+        raise
+
+    if total == 0:
+        if destination.exists():
+            destination.unlink()
+        raise HTTPException(status_code=400, detail="Uploaded product file is empty")
+
+    _delete_existing_product_file(product)
+    product.product_file_path = str(destination)
+    product.product_file_name = Path(file.filename).name
+    product.product_file_size = total
+    product.product_file_uploaded_at = _now()
+    product.download_url = None
+    return {
+        "product_file_name": product.product_file_name,
+        "product_file_size": product.product_file_size,
+        "product_file_uploaded_at": product.product_file_uploaded_at.isoformat(),
+    }
 
 
 def _customer_orders_query(db: Session, user: User):
@@ -222,7 +314,114 @@ def _serialize_product_list(product: Product) -> dict:
         "platform": product.platform,
         "version": product.version,
         "thumbnail_url": product.thumbnail_url,
+        "product_file_name": product.product_file_name,
+        "product_file_size": product.product_file_size,
+        "product_file_uploaded_at": product.product_file_uploaded_at.isoformat() if product.product_file_uploaded_at else None,
         "featured": product.featured,
+    }
+
+
+def _now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _parse_datetime(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    clean_value = value.strip()
+    if not clean_value:
+        return None
+    try:
+        return datetime.fromisoformat(clean_value.replace("Z", "+00:00"))
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid expiry date")
+
+
+def _generate_license_key() -> str:
+    return f"TFE-{secrets.token_hex(3).upper()}-{secrets.token_hex(3).upper()}-{secrets.token_hex(3).upper()}"
+
+
+def _serialize_license(license_record: License, include_checks: bool = False) -> dict:
+    product = license_record.product
+    user = license_record.user
+    data = {
+        "id": license_record.id,
+        "license_key": license_record.license_key,
+        "status": license_record.status,
+        "activation_type": license_record.activation_type or "ea_account",
+        "allowed_mt_account_number": license_record.allowed_mt_account_number,
+        "allowed_broker_server": license_record.allowed_broker_server,
+        "device_fingerprint": license_record.device_fingerprint,
+        "expires_at": license_record.expires_at.isoformat() if license_record.expires_at else None,
+        "activated_at": license_record.activated_at.isoformat() if license_record.activated_at else None,
+        "mt_account_updated_at": license_record.mt_account_updated_at.isoformat() if license_record.mt_account_updated_at else None,
+        "last_checked_at": license_record.last_checked_at.isoformat() if license_record.last_checked_at else None,
+        "last_check_status": license_record.last_check_status,
+        "last_check_message": license_record.last_check_message,
+        "created_at": license_record.created_at.isoformat() if license_record.created_at else None,
+        "updated_at": license_record.updated_at.isoformat() if license_record.updated_at else None,
+        "user": {
+            "id": user.id if user else None,
+            "email": user.email if user else None,
+            "full_name": user.full_name if user else None,
+        },
+        "product": {
+            "id": product.id if product else None,
+            "name": product.name if product else None,
+            "slug": product.slug if product else None,
+            "platform": product.platform if product else None,
+        },
+        "order_id": license_record.order_id,
+    }
+    if include_checks:
+        checks = sorted(license_record.checks, key=lambda item: item.checked_at or datetime.min, reverse=True)[:25]
+        data["checks"] = [
+            {
+                "id": check.id,
+                "product_code": check.product_code,
+                "mt_account_number": check.mt_account_number,
+                "platform": check.platform,
+                "client_version": check.client_version,
+                "result": check.result,
+                "message": check.message,
+                "ip_address": check.ip_address,
+                "checked_at": check.checked_at.isoformat() if check.checked_at else None,
+            }
+            for check in checks
+        ]
+    return data
+
+
+def _validate_license_payload(data: dict, creating: bool = False) -> dict:
+    user_id = int(data.get("user_id") or 0)
+    product_id = int(data.get("product_id") or 0)
+    order_id = data.get("order_id")
+    status = (data.get("status") or "active").strip().lower()
+    activation_type = (data.get("activation_type") or "ea_account").strip().lower()
+    license_key = (data.get("license_key") or "").strip().upper()
+
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Customer is required")
+    if not product_id:
+        raise HTTPException(status_code=400, detail="Product is required")
+    if status not in VALID_LICENSE_STATUSES:
+        raise HTTPException(status_code=400, detail="Invalid license status")
+    if activation_type not in VALID_LICENSE_ACTIVATION_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid activation type")
+    if creating and not license_key:
+        license_key = _generate_license_key()
+
+    return {
+        "user_id": user_id,
+        "product_id": product_id,
+        "order_id": int(order_id) if order_id else None,
+        "license_key": license_key,
+        "status": status,
+        "activation_type": activation_type,
+        "allowed_mt_account_number": (data.get("allowed_mt_account_number") or "").strip() or None,
+        "allowed_broker_server": (data.get("allowed_broker_server") or "").strip() or None,
+        "device_fingerprint": (data.get("device_fingerprint") or "").strip() or None,
+        "expires_at": _parse_datetime(data.get("expires_at")),
     }
 
 
@@ -286,6 +485,128 @@ def get_stats(db: Session = Depends(get_db)):
         project_requests=project_requests,
         revenue=revenue,
     )
+
+
+@router.get("/licenses")
+def list_licenses(
+    status: str | None = Query(None),
+    activation_type: str | None = Query(None),
+    search: str | None = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=5, le=100),
+    db: Session = Depends(get_db),
+):
+    query = db.query(License).options(joinedload(License.product), joinedload(License.user))
+    if status:
+        query = query.filter(License.status == status)
+    if activation_type:
+        query = query.filter(License.activation_type == activation_type)
+    if search:
+        like = f"%{search.strip().lower()}%"
+        query = query.outerjoin(User, License.user_id == User.id).outerjoin(Product, License.product_id == Product.id).filter(
+            or_(
+                func.lower(License.license_key).like(like),
+                func.lower(License.allowed_mt_account_number).like(like),
+                func.lower(License.status).like(like),
+                func.lower(User.email).like(like),
+                func.lower(User.full_name).like(like),
+                func.lower(Product.name).like(like),
+                func.lower(Product.slug).like(like),
+            )
+        )
+
+    items, total, page, pages = _paginate_query(query.order_by(License.created_at.desc()), page, page_size)
+    all_licenses = db.query(License).all()
+    return {
+        "items": [_serialize_license(item) for item in items],
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "pages": pages,
+        "stats": {
+            "total_licenses": len(all_licenses),
+            "active_licenses": len([item for item in all_licenses if (item.status or "active") == "active"]),
+            "assigned_accounts": len([item for item in all_licenses if item.allowed_mt_account_number]),
+            "recent_checks": len([item for item in all_licenses if item.last_checked_at]),
+        },
+    }
+
+
+@router.post("/licenses", status_code=201)
+def create_license(data: dict, db: Session = Depends(get_db)):
+    payload = _validate_license_payload(data, creating=True)
+    user = db.query(User).filter(User.id == payload["user_id"]).first()
+    product = db.query(Product).filter(Product.id == payload["product_id"]).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    if payload["order_id"] and not db.query(Order).filter(Order.id == payload["order_id"]).first():
+        raise HTTPException(status_code=404, detail="Order not found")
+    existing = db.query(License).filter(func.upper(License.license_key) == payload["license_key"]).first()
+    if existing:
+        raise HTTPException(status_code=409, detail="License key already exists")
+
+    license_record = License(**payload, created_at=_now(), updated_at=_now())
+    if payload["allowed_mt_account_number"]:
+        license_record.mt_account_updated_at = _now()
+    db.add(license_record)
+    db.commit()
+    db.refresh(license_record)
+    return _serialize_license(license_record)
+
+
+@router.get("/licenses/{license_id}")
+def get_license(license_id: int, db: Session = Depends(get_db)):
+    license_record = (
+        db.query(License)
+        .options(joinedload(License.product), joinedload(License.user), joinedload(License.checks))
+        .filter(License.id == license_id)
+        .first()
+    )
+    if not license_record:
+        raise HTTPException(status_code=404, detail="License not found")
+    return _serialize_license(license_record, include_checks=True)
+
+
+@router.put("/licenses/{license_id}")
+def update_license(license_id: int, data: dict, db: Session = Depends(get_db)):
+    license_record = db.query(License).filter(License.id == license_id).first()
+    if not license_record:
+        raise HTTPException(status_code=404, detail="License not found")
+
+    payload = _validate_license_payload(data)
+    if not db.query(User).filter(User.id == payload["user_id"]).first():
+        raise HTTPException(status_code=404, detail="Customer not found")
+    if not db.query(Product).filter(Product.id == payload["product_id"]).first():
+        raise HTTPException(status_code=404, detail="Product not found")
+    existing = (
+        db.query(License)
+        .filter(func.upper(License.license_key) == payload["license_key"], License.id != license_record.id)
+        .first()
+    )
+    if existing:
+        raise HTTPException(status_code=409, detail="License key already exists")
+
+    old_account = license_record.allowed_mt_account_number
+    for key, value in payload.items():
+        setattr(license_record, key, value)
+    if old_account != payload["allowed_mt_account_number"]:
+        license_record.mt_account_updated_at = _now() if payload["allowed_mt_account_number"] else None
+    license_record.updated_at = _now()
+    db.commit()
+    db.refresh(license_record)
+    return _serialize_license(license_record)
+
+
+@router.delete("/licenses/{license_id}", status_code=204)
+def delete_license(license_id: int, db: Session = Depends(get_db)):
+    license_record = db.query(License).filter(License.id == license_id).first()
+    if not license_record:
+        raise HTTPException(status_code=404, detail="License not found")
+    db.delete(license_record)
+    db.commit()
+    return None
 
 
 @router.get("/customers")
@@ -492,6 +813,36 @@ def upload_product_thumbnail(
     image_url = _save_product_upload(file)
     product.thumbnail_url = image_url
     return {"thumbnail_url": image_url}
+
+
+@router.post("/products/{product_id}/file")
+def upload_product_file(
+    product_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    data = _save_product_file_upload(product, file)
+    db.commit()
+    db.refresh(product)
+    return data
+
+
+@router.delete("/products/{product_id}/file", status_code=204)
+def delete_product_file(product_id: int, db: Session = Depends(get_db)):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    _delete_existing_product_file(product)
+    product.product_file_path = None
+    product.product_file_name = None
+    product.product_file_size = None
+    product.product_file_uploaded_at = None
+    product.download_url = None
+    db.commit()
+    return None
 
 
 @router.post("/products/{product_id}/images", status_code=201)

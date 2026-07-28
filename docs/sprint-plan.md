@@ -127,7 +127,7 @@
 | Sprint | Focus |
 |--------|-------|
 | 6 | Production payment integration |
-| 7 | Licensing portal (downloads, license status, activation records) |
+| 7 | Download delivery and software-device license activation |
 | 8 | Google/Gmail OAuth login, if needed |
 | 9 | Analytics dashboard (sales, inquiries) |
 | 10 | Multi-language support |

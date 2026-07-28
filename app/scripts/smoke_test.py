@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+import tempfile
 import uuid
 
 import requests
@@ -9,7 +10,7 @@ from sqlalchemy import func, or_
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from app.database import SessionLocal
-from app.models import Cart, ContactInquiry, CustomProjectRequest, Order, User
+from app.models import Cart, ContactInquiry, CustomProjectRequest, License, LicenseCheck, Order, User
 
 
 PAGINATED_KEYS = {"items", "total", "page", "page_size", "pages", "stats"}
@@ -74,6 +75,11 @@ def cleanup(email: str, session_ids: list[str], order_id: int | None = None) -> 
         email_lower = email.lower()
         users = db.query(User).filter(func.lower(User.email) == email_lower).all()
         for user in users:
+            licenses = db.query(License).filter(License.user_id == user.id).all()
+            for license_record in licenses:
+                db.query(LicenseCheck).filter(LicenseCheck.license_id == license_record.id).delete()
+                db.delete(license_record)
+
             orders = db.query(Order).filter(
                 or_(
                     Order.user_id == user.id,
@@ -117,6 +123,7 @@ def run(args: argparse.Namespace) -> None:
     customer_password = f"Smoke{run_id}!"
     guest_session_id = f"smoke-guest-{run_id}"
     customer_session_id = f"smoke-customer-{run_id}"
+    smoke_mt_account = f"77{run_id[:6]}"
     created_order_id = None
 
     public = requests.Session()
@@ -304,7 +311,7 @@ def run(args: argparse.Namespace) -> None:
             "created order was not visible in customer account history",
         )
 
-        for path in ["/account", "/account/orders", "/account/profile", "/account/support", "/account/projects"]:
+        for path in ["/account", "/account/orders", "/account/licenses", "/account/profile", "/account/support", "/account/projects"]:
             response = customer.get(f"{base_url}{path}")
             require_status(response, 200, f"customer portal page {path}")
 
@@ -318,15 +325,96 @@ def run(args: argparse.Namespace) -> None:
         require_paginated(account_support, "account support")
 
         if not args.skip_admin:
+            step("checking license issue, account binding, and EA validation")
+            response = admin.post(
+                f"{base_url}/api/admin/licenses",
+                json={
+                    "user_id": account_profile["id"],
+                    "product_id": product_id,
+                    "status": "active",
+                    "activation_type": "ea_account",
+                },
+            )
+            require_status(response, 201, "admin create license")
+            license_data = response.json()
+            require(license_data["license_key"].startswith("TFE-"), "generated license key format mismatch")
+
+            account_licenses = get_json(customer, f"{base_url}/api/account/licenses", "account licenses")
+            require(account_licenses["items"], "customer account did not show issued license")
+            license_id = account_licenses["items"][0]["id"]
+
+            response = customer.put(
+                f"{base_url}/api/account/licenses/{license_id}/mt-account",
+                json={"mt_account_number": smoke_mt_account},
+            )
+            require_status(response, 200, "customer bind MT account")
+
+            product_file_content = f"smoke protected product file {run_id}".encode("utf-8")
+            with tempfile.NamedTemporaryFile("wb", suffix=".txt", delete=False) as handle:
+                handle.write(product_file_content)
+                temp_product_file = handle.name
+            try:
+                with open(temp_product_file, "rb") as handle:
+                    response = admin.post(
+                        f"{base_url}/api/admin/products/{product_id}/file",
+                        files={"file": ("smoke-product-file.txt", handle, "text/plain")},
+                    )
+                require_status(response, 200, "admin upload product file")
+                uploaded_file = response.json()
+                require(uploaded_file["product_file_name"] == "smoke-product-file.txt", "uploaded product filename mismatch")
+
+                account_licenses = get_json(customer, f"{base_url}/api/account/licenses", "account licenses after file upload")
+                license_row = next(item for item in account_licenses["items"] if item["id"] == license_id)
+                require(license_row["download_available"] is True, "licensed download was not marked available")
+
+                response = customer.get(f"{base_url}/api/account/licenses/{license_id}/download")
+                require_status(response, 200, "licensed product download")
+                require(response.content == product_file_content, "downloaded product file content mismatch")
+            finally:
+                try:
+                    os.unlink(temp_product_file)
+                except OSError:
+                    pass
+
+            response = public.post(
+                f"{base_url}/api/licenses/v1/ea/validate",
+                json={
+                    "license_key": license_data["license_key"],
+                    "product_code": product_slug,
+                    "mt_account_number": smoke_mt_account,
+                    "platform": "MT5",
+                    "client_version": "smoke",
+                },
+            )
+            require_status(response, 200, "EA license validation")
+            require(response.json()["allowed"] is True, "valid EA license was not allowed")
+
+            response = public.post(
+                f"{base_url}/api/licenses/v1/ea/validate",
+                json={
+                    "license_key": license_data["license_key"],
+                    "product_code": product_slug,
+                    "mt_account_number": "000000",
+                    "platform": "MT5",
+                    "client_version": "smoke",
+                },
+            )
+            require_status(response, 200, "EA wrong account validation")
+            require(response.json()["allowed"] is False, "wrong MT account should not be allowed")
+
+            response = admin.delete(f"{base_url}/api/admin/products/{product_id}/file")
+            require_status(response, 204, "admin delete product file")
+
             step("checking admin login, pages, and paginated APIs")
 
-            for path in ["/admin", "/admin/products", "/admin/orders", "/admin/inquiries", "/admin/customers", "/admin/categories"]:
+            for path in ["/admin", "/admin/products", "/admin/orders", "/admin/licenses", "/admin/inquiries", "/admin/customers", "/admin/categories"]:
                 response = admin.get(f"{base_url}{path}")
                 require_status(response, 200, f"admin page {path}")
 
             for path, label in [
                 ("/api/admin/products?page=1&page_size=5", "admin products"),
                 ("/api/admin/orders?page=1&page_size=5", "admin orders"),
+                ("/api/admin/licenses?page=1&page_size=5", "admin licenses"),
                 ("/api/admin/customers?page=1&page_size=5", "admin customers"),
                 ("/api/admin/inquiries?page=1&page_size=5", "admin inquiries"),
                 ("/api/admin/project-requests?page=1&page_size=5", "admin project requests"),

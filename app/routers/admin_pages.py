@@ -47,6 +47,11 @@ def admin_orders(request: Request, current_user: User = Depends(get_current_user
     return templates.TemplateResponse("admin/orders.html", {"request": request, "user": current_user})
 
 
+@router.get("/admin/licenses", dependencies=[Depends(require_admin)])
+def admin_licenses(request: Request, current_user: User = Depends(get_current_user)):
+    return templates.TemplateResponse("admin/licenses.html", {"request": request, "user": current_user})
+
+
 @router.get("/admin/inquiries", dependencies=[Depends(require_admin)])
 def admin_inquiries(request: Request, current_user: User = Depends(get_current_user)):
     return templates.TemplateResponse("admin/inquiries.html", {"request": request, "user": current_user})

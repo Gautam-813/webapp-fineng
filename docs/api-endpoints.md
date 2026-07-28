@@ -268,7 +268,43 @@ Submit a custom development project request.
 | GET | `/api/account/profile` | Get customer profile |
 | PUT | `/api/account/profile` | Update customer profile |
 | GET | `/api/account/orders` | Get user's order history |
+| GET | `/api/account/licenses` | Get user's issued license keys and bindings |
+| PUT | `/api/account/licenses/{id}/mt-account` | Update allowed MT account number for an EA license |
+| GET | `/api/account/licenses/{id}/download` | Download protected product file for an active owned license |
 | GET | `/api/account/projects` | Get user's custom project requests |
 | GET | `/api/account/support` | Get user's support inquiries |
 
 Registration now creates customer users with `pending_verification` status. Login is blocked until `/api/auth/register/verify` successfully verifies the emailed OTP. OTPs are stored hashed, expire after the configured window, and are consumed after successful verification.
+
+## License API
+
+### POST /api/licenses/v1/ea/validate
+Validate an EA license key against the product code and current MT account number.
+
+**Request:**
+```json
+{
+  "license_key": "TFE-ABC123-DEF456-GHI789",
+  "product_code": "upper_ladder_ea_v2",
+  "mt_account_number": "12345678",
+  "platform": "MT5",
+  "client_version": "1.00",
+  "broker_server": "Broker-Live"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "allowed": true,
+  "status": "active",
+  "message": "License active",
+  "next_check_after_seconds": 28800,
+  "offline_grace_seconds": 86400,
+  "server_time": "2026-07-28T10:00:00+00:00",
+  "expires_at": null,
+  "product_code": "upper_ladder_ea_v2"
+}
+```
+
+Blocked licenses also return `200 OK` with `allowed: false` so compiled EAs can stop cleanly.

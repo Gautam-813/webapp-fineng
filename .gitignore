@@ -30,6 +30,7 @@ Thumbs.db
 .gitrepo/
 .agents/
 app/static/uploads/
+storage/product_files/
 
 # Docker
 .dockerignore

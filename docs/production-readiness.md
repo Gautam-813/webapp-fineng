@@ -11,7 +11,8 @@ This project is currently a functional demo web app for TheFinanceCompany. The b
 - Customer registration uses Gmail-only email addresses and emailed OTP verification through Resend.
 - Forgot password uses emailed OTP verification before changing the password.
 - Cookie-authenticated state-changing requests are protected by same-origin CSRF checks.
-- Downloads and licensing are intentionally left for the licensing system integration.
+- EA licensing supports admin-issued keys, customer MT account binding, and versioned validation API checks.
+- Product downloads are delivered through license-gated account endpoints; software-device licensing remains a later step.
 
 ## Must Finish Before Production
 
@@ -24,8 +25,9 @@ This project is currently a functional demo web app for TheFinanceCompany. The b
 - Monitor OTP delivery, bounce/spam placement, resend rates, provider message IDs, and failed verification attempts.
 - Add admin password rotation procedures.
 - Add real payment integration, webhook validation, payment status transitions, and refund handling.
-- Integrate the licensing/download system after payment or confirmed manual approval rules are decided.
-- Keep upload size limits enabled and add production object storage for product media.
+- Connect automatic license issuance to paid orders or confirmed manual approval rules.
+- Complete software-device fingerprint licensing after EA license validation is stable.
+- Keep upload size limits enabled and add production object storage for product media and protected product files.
 - Add audit logging for admin edits to products, users, order statuses, and categories.
 - Add transactional email notifications for order confirmation, contact receipt, and admin alerts.
 - Add legal pages: terms, privacy policy, refund policy, risk disclaimer, and support policy.
@@ -121,6 +123,6 @@ The app also adds baseline security headers, including clickjacking protection, 
 
 - `confirmed` means the customer placed an order, not that money was collected.
 - Admin revenue intentionally counts only `paid` orders.
-- Product download files are not delivered by this app yet.
-- Licensing will be connected later by the licensing-system workstream.
+- Automatic license issuance after payment is not connected yet.
+- Software-device fingerprint licensing will be connected later by the licensing-system workstream.
 - Google OAuth/Gmail login is not implemented yet; registration currently uses email/password plus OTP.

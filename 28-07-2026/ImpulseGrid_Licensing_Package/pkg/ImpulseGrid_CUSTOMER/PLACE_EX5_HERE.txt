@@ -1,0 +1,7 @@
+After you compile TheFinanceEngine_ImpulseGrid.mq5 in MetaEditor,
+copy the resulting TheFinanceEngine_ImpulseGrid.ex5 into THIS folder.
+This customer package must contain ONLY:
+  - TheFinanceEngine_ImpulseGrid.ex5   (compiled, add after compiling)
+  - README.md
+  - Product_Manual.md
+Never place .mq5 or .mqh files in the customer package.

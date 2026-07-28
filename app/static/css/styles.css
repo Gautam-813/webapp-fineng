@@ -1580,6 +1580,24 @@ a:hover {
     font-size: 0.9rem;
 }
 
+.license-key-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--border);
+    background: var(--surface-soft);
+    border-radius: 0.5rem;
+}
+
+.license-key-box code {
+    color: var(--primary);
+    font-weight: 700;
+    white-space: normal;
+    word-break: break-all;
+}
+
 .account-mini-stat {
     min-height: 78px;
     padding: 1rem;

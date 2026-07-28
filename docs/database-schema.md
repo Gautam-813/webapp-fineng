@@ -54,7 +54,11 @@ Index: `idx_email_otps_lookup` on `email`, `purpose`, `consumed_at`
 | status | VARCHAR(20) DEFAULT 'active' | active / inactive / draft |
 | version | VARCHAR(50) | |
 | platform | VARCHAR(50) | MT4 / MT5 / Web / Desktop |
-| download_url | VARCHAR(500) | |
+| download_url | VARCHAR(500) | Legacy/external download reference |
+| product_file_path | VARCHAR(500) | Protected server-side file path |
+| product_file_name | VARCHAR(255) | Original uploaded filename |
+| product_file_size | INT | File size in bytes |
+| product_file_uploaded_at | TIMESTAMP | |
 | thumbnail_url | VARCHAR(500) | |
 | featured | BOOLEAN DEFAULT FALSE | |
 | created_at | TIMESTAMP DEFAULT NOW() | |
@@ -151,8 +155,32 @@ Index: `idx_orders_email` on `customer_email`
 | user_id | INT FK -> users.id | Nullable |
 | license_key | VARCHAR(255) UNIQUE NOT NULL | |
 | status | VARCHAR(20) DEFAULT 'active' | active / revoked / expired |
+| activation_type | VARCHAR(30) DEFAULT 'ea_account' | ea_account / device |
+| allowed_mt_account_number | VARCHAR(64) | One MT account allowed per EA license |
+| allowed_broker_server | VARCHAR(255) | Optional stricter EA binding |
+| device_fingerprint | VARCHAR(255) | Reserved for software products |
+| activated_at | TIMESTAMP | |
 | expires_at | TIMESTAMP | Nullable |
+| mt_account_updated_at | TIMESTAMP | Used for customer cooldown rules |
+| last_checked_at | TIMESTAMP | Last EA/software validation |
+| last_check_status | VARCHAR(30) | active / expired / account_mismatch / etc. |
+| last_check_message | VARCHAR(255) | Last validation message |
 | created_at | TIMESTAMP DEFAULT NOW() | |
+| updated_at | TIMESTAMP DEFAULT NOW() | |
+
+### license_checks
+| Column | Type | Notes |
+|--------|------|-------|
+| id | SERIAL PK | |
+| license_id | INT FK -> licenses.id ON DELETE SET NULL | Nullable for unknown keys |
+| product_code | VARCHAR(255) | Product slug sent by EA/software |
+| mt_account_number | VARCHAR(64) | Account number sent by EA |
+| platform | VARCHAR(50) | MT4 / MT5 / Desktop |
+| client_version | VARCHAR(50) | |
+| result | VARCHAR(30) NOT NULL | active / not_found / account_mismatch / expired |
+| message | VARCHAR(255) | |
+| ip_address | VARCHAR(64) | |
+| checked_at | TIMESTAMP DEFAULT NOW() | |
 
 ### contact_inquiries
 | Column | Type | Notes |
@@ -198,4 +226,5 @@ orders 1---* order_items
 orders 1---* payments
 orders 1---* licenses
 products 1---* licenses
+licenses 1---* license_checks
 ```
